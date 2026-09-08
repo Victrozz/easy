@@ -11,7 +11,9 @@ import { CONFIG } from '../config.js';
 import {
   store, getToken, setToken, hasToken, flush, refresh, pendingCount, discardOutbox,
 } from '../store.js';
-import { SETTINGS_FILE, SLOTS, SLOT_LABEL, settings, setDayDefault, commit } from '../model.js';
+import {
+  SETTINGS_FILE, SLOTS, SLOT_LABEL, settings, setDayDefault, commit, logEvent,
+} from '../model.js';
 import { DAY_KEYS, DAY_LONG, prettyTime } from '../util.js';
 
 const THEME_KEY = 'easy.theme';
@@ -129,10 +131,24 @@ export function tokenSheet(ctx) {
           setToken(input.value);
           done();
           if (!input.value.trim()) { ctx.rerender(); return; }
+
           toast('Checking…');
           await refresh(Object.keys(store.data));
-          if (store.status === 'error') toast(store.error, 'bad');
-          else { toast('Connected'); flush(); }
+          if (store.status === 'error') { toast(store.error, 'bad'); ctx.rerender(); return; }
+
+          // Reading proves nothing about writing: a token granted only
+          // Contents-read sails through the check above and then fails on
+          // your first tap, hours later, with no obvious cause. So actually
+          // write something — a real log line, not a throwaway probe.
+          commit(logEvent('device.connected', {
+            agent: (navigator.userAgent || '').slice(0, 90),
+          }));
+          await flush();
+          if (store.status === 'error') {
+            toast(store.error + ' — reading works, writing does not', 'bad');
+          } else {
+            toast('Connected. This device can save.');
+          }
           ctx.rerender();
         },
       }),
