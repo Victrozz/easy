@@ -190,7 +190,11 @@ async function boot() {
   startSync();
   onChange(() => { if (!rendering) render(); });
 
-  await ensureFiles();
+  // Paint from cache instantly, then always re-check GitHub. A plain load()
+  // here would return immediately whenever the cache already had every file,
+  // which meant a week Claude planned on a laptop would not show up on the
+  // phone until it was backgrounded and reopened.
+  await refresh(wantedFiles());
   render();
 
   if (!hasToken() && store.status !== 'error') {
@@ -207,13 +211,20 @@ boot();
 // ------------------------------------------------------------ service worker --
 
 if ('serviceWorker' in navigator) {
+  // On a first ever visit there is no controller, and clients.claim() fires
+  // controllerchange anyway — reloading there would just be a pointless flash.
+  // Only reload when a worker actually replaced a previous one, i.e. a deploy
+  // landed while the app was open.
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloading) return;
+    reloading = true;
+    location.reload();
+  });
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').catch(() => { /* fine offline */ });
-    let reloading = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloading) return;
-      reloading = true;
-      location.reload();
-    });
   });
 }

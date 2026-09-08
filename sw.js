@@ -7,7 +7,7 @@
 // from a cache would be worse than no meal plan. The store keeps its own
 // last-known-good copy in localStorage for offline reading.
 
-const VERSION = 'easy-5c52615034';
+const VERSION = 'easy-157c5c7c52';
 
 const SHELL = [
   './',
@@ -33,12 +33,34 @@ const SHELL = [
   './icons/favicon.png',
 ];
 
+// Precaching is the one genuinely dangerous moment in a service worker.
+//
+// GitHub Pages deploys are not atomic across the CDN: sw.js can go live a few
+// seconds before the files it precaches do. A plain cache.add() during that
+// window bakes a STALE file into the cache under a FRESH version name, where
+// it then sits forever — a half-updated app, no error anywhere. That happened
+// on this app's very first deploy, which is why this is written out longhand.
+//
+// The fix: fetch each file with a version-unique query string. The CDN has
+// never seen that URL so it cannot answer from an edge cache, and
+// `cache: 'reload'` skips the browser's own HTTP cache on the way. Store the
+// response under the clean URL so runtime lookups still match.
+async function precache(cache, url) {
+  const bust = url + (url.includes('?') ? '&' : '?') + 'v=' + VERSION;
+  try {
+    const fresh = await fetch(bust, { cache: 'reload' });
+    if (fresh && fresh.ok) await cache.put(url, fresh);
+  } catch {
+    /* offline mid-install — the runtime handler fills it in later */
+  }
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(VERSION)
-      // addAll is all-or-nothing; one 404 would leave you with no cache at all.
-      .then((cache) => Promise.all(SHELL.map((url) =>
-        cache.add(url).catch(() => null))))
+      // One at a time rather than addAll, which is all-or-nothing: a single
+      // failure there would leave you with no cache at all.
+      .then((cache) => Promise.all(SHELL.map((url) => precache(cache, url))))
       .then(() => self.skipWaiting()),
   );
 });

@@ -290,7 +290,14 @@ export function loadCache() {
 export async function load(paths, options) {
   const force = !!(options && options.force);
   const want = paths.filter((p) => force || store.data[p] === undefined);
-  if (want.length === 0) return;
+  if (want.length === 0) {
+    // Everything was already in hand. Still say out loud whether this device
+    // can save, or a token-less phone sits on a stale "idle" forever.
+    if (store.status === 'idle' || store.status === 'readonly') {
+      setStatus(hasToken() ? 'idle' : 'readonly');
+    }
+    return;
+  }
 
   const reader = hasToken() ? apiRead : publicRead;
   if (store.status !== 'syncing') setStatus('loading');
