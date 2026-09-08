@@ -147,12 +147,21 @@ Use `removeWhere`/`patchWhere` with an id rather than an array index.
 
 ```bash
 node tools/check.mjs && node tools/test-store.mjs && node tools/release.mjs
+git add -A && git commit && git push
+node tools/verify-deploy.mjs --wait
 ```
 
 - `check.mjs` — imports resolve, sw precache list is real, JSON parses
 - `test-store.mjs` — the sync layer, including the conflict case
 - `release.mjs` — **stamps sw.js with a content hash.** Skip it and his phone
   keeps serving the old app out of cache with no visible error.
+- `verify-deploy.mjs` — compares every shell file on the live site against
+  disk. **Do not skip this either.** Pages does not deploy atomically across
+  its CDN; the first deploy of this app put a stale `today.js` into the
+  service worker cache under a fresh version name. The worker now cache-busts
+  its precache fetches, but this is the check that proves a deploy landed.
+
+Pages takes roughly a minute. `--wait` polls.
 
 ## Standing facts about Víctor
 

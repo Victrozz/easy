@@ -7,7 +7,7 @@
 // from a cache would be worse than no meal plan. The store keeps its own
 // last-known-good copy in localStorage for offline reading.
 
-const VERSION = 'easy-157c5c7c52';
+const VERSION = 'easy-2277c85439';
 
 const SHELL = [
   './',

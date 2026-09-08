@@ -46,5 +46,6 @@ save. So a device you only want to glance at needs no setup at all.
 node tools/check.mjs        # imports, sw precache list, JSON
 node tools/test-store.mjs   # the sync layer, incl. the conflict case
 node tools/release.mjs      # stamp sw.js — do this before every push
+node tools/verify-deploy.mjs --wait   # confirm the CDN actually caught up
 python -m http.server 8765  # then open http://127.0.0.1:8765
 ```

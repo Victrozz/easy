@@ -3,7 +3,7 @@
 import { CONFIG } from './config.js';
 import { el, clear, icon, toast } from './ui.js';
 import {
-  store, onChange, load, refresh, flush, startSync, loadCache, hasToken,
+  store, onChange, load, refresh, flush, startSync, loadCache,
   pendingCount, read,
 } from './store.js';
 import { modules, navModules, moduleById } from './modules/index.js';
@@ -197,11 +197,9 @@ async function boot() {
   await refresh(wantedFiles());
   render();
 
-  if (!hasToken() && store.status !== 'error') {
-    setTimeout(() => {
-      if (!hasToken()) toast('Read-only — add your token in Settings');
-    }, 900);
-  }
+  // No "you have no token" toast here on purpose — the Today tab already
+  // leads with a card about it, and the header dot says it permanently.
+  // Saying it a third time is nagging.
 
   if (pendingCount()) flush();
 }

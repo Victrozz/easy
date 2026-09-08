@@ -13,5 +13,7 @@
   "targets": {
     "protein": null,
     "fiber": null
-  }
+  },
+  "_lastSession": "Set by Claude after a weekly session. Today only mentions it once one has actually happened.",
+  "lastSession": null
 }
