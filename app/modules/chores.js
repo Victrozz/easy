@@ -201,7 +201,7 @@ function choreRow(entry, ctx) {
       ? el('span.pill.due', status.state === 'new' ? 'due' : (-status.dueIn === 0 ? 'today' : (-status.dueIn) + 'd over'))
       : null;
 
-  return el('div.item', { onclick: () => editChore(chore, ctx) }, [
+  return el('div.item', { tappable: true, onclick: () => editChore(chore, ctx) }, [
     tick,
     el('div.grow', [
       el('div.name', { class: doneToday ? 'strike' : '' }, chore.name),
@@ -212,7 +212,7 @@ function choreRow(entry, ctx) {
 }
 
 function taskRow(task, ctx) {
-  return el('div.item', { onclick: () => editTask(task, ctx) }, [
+  return el('div.item', { tappable: true, onclick: () => editTask(task, ctx) }, [
     el('button.tick', {
       class: task.done ? 'done' : '',
       'aria-label': task.name,

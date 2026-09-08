@@ -70,11 +70,32 @@ function dayEditor(dk, ctx) {
   ]);
 }
 
-function tokenSheet(ctx) {
-  sheet('GitHub token', (body, done) => {
+export function tokenSheet(ctx) {
+  sheet('Connect this device', (body, done) => {
     body.appendChild(el('p.sheet-text',
-      'Easy. writes straight to your repo. It needs a fine-grained token with '
-      + 'Contents: read and write on ' + CONFIG.owner + '/' + CONFIG.repo + ' and nothing else.'));
+      'Easy. writes straight to your repo, so it needs a token. Two settings '
+      + 'matter and the rest can stay as they are.'));
+
+    body.appendChild(el('ol.steps', [
+      el('li', [
+        'Open ',
+        el('a', {
+          href: 'https://github.com/settings/personal-access-tokens/new',
+          target: '_blank',
+          rel: 'noopener',
+        }, 'the token page'),
+        '.',
+      ]),
+      el('li', [
+        'Repository access → ', el('b', 'Only select repositories'),
+        ' → pick ', el('code', CONFIG.repo), '.',
+      ]),
+      el('li', [
+        'Repository permissions → ', el('b', 'Contents'), ' → ',
+        el('b', 'Read and write'), '. Nothing else.',
+      ]),
+      el('li', 'Generate it, copy it, paste it below. GitHub shows it once.'),
+    ]));
 
     const input = el('input.input', {
       type: 'password',
@@ -97,7 +118,8 @@ function tokenSheet(ctx) {
     }));
 
     body.appendChild(el('p.small.dim', { style: { marginTop: '14px' } },
-      'It is stored only on this device and never written into the repo.'));
+      'Stored only on this device, never written into the repo. If you ever '
+      + 'clear your browser data you will just paste it again.'));
 
     body.appendChild(el('div.sheet-actions', [
       button('Cancel', { class: 'ghost', onclick: () => done() }),

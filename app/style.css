@@ -870,3 +870,54 @@ body.sheet-open { overflow: hidden; }
 button.item { font: inherit; }
 
 a.btn { text-decoration: none; }
+
+/* ------------------------------------------------------------ keyboard --- */
+/* Mouse and touch get no ring; a keyboard gets an obvious one. */
+
+:focus { outline: none; }
+
+.btn:focus-visible,
+.chip:focus-visible,
+.icon-btn:focus-visible,
+.tick:focus-visible,
+.day-chip:focus-visible,
+.seg button:focus-visible,
+.toggle:focus-visible,
+.nav a:focus-visible,
+[role="button"]:focus-visible,
+.item:focus-visible,
+.slot:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-btn);
+}
+
+.input:focus-visible { outline: none; }
+
+/* ------------------------------------------------------------ setup list -- */
+
+.steps {
+  margin: 0 0 18px;
+  padding-left: 22px;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.steps li { margin-bottom: 9px; }
+.steps li::marker { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.steps b { color: var(--ink); font-weight: 600; }
+.steps a { color: var(--accent); }
+
+.steps code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  background: var(--paper-2);
+  padding: 1px 6px;
+  border-radius: 6px;
+  color: var(--ink);
+}
+
+/* Stop the whole page bouncing when a list is scrolled to its end. */
+.main { overscroll-behavior-y: contain; }

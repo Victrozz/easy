@@ -30,6 +30,7 @@ export function el(spec, props, children) {
   for (const key of Object.keys(props)) {
     const v = props[key];
     if (v === undefined || v === null || v === false) continue;
+    if (key === 'tappable') continue;
     if (key === 'class') node.className += (node.className ? ' ' : '') + v;
     else if (key === 'style' && typeof v === 'object') Object.assign(node.style, v);
     else if (key === 'html') node.innerHTML = v;
@@ -40,6 +41,21 @@ export function el(spec, props, children) {
     } else {
       node.setAttribute(key, v === true ? '' : v);
     }
+  }
+
+  // A clickable div is invisible to a keyboard. Rows that contain their own
+  // buttons (a tick, a close) cannot be <button> themselves — nested buttons
+  // are invalid — so they opt in to being reachable instead.
+  if (props.tappable && props.onclick) {
+    node.setAttribute('role', 'button');
+    node.setAttribute('tabindex', '0');
+    node.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        if (e.target !== node) return; // let inner buttons handle their own
+        e.preventDefault();
+        props.onclick(e);
+      }
+    });
   }
 
   append(node, children);

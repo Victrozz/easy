@@ -5,11 +5,33 @@
 
 import { el, card, button, icon, toast, sectionTitle, empty } from '../ui.js';
 import {
-  getWeek, sortedChores, chores, projects, inbox, setPresence,
+  getWeek, sortedChores, chores, projects, inbox, setPresence, settings,
   SLOTS, SLOT_LABEL, MODE_ICON, mealName, commit, logEvent, CHORES_FILE,
 } from '../model.js';
 import { ymd, weekKey, relDays, daysAgo, DAY_LONG, dayKeyOf, prettyDate } from '../util.js';
+import { hasToken } from '../store.js';
 import inboxModule from './inbox.js';
+import { tokenSheet } from './settings.js';
+
+// Per-device dismissals. These are conveniences, not data — localStorage is
+// exactly the right place for them.
+function dismissed(key) {
+  try { return localStorage.getItem('easy.dismiss.' + key) === '1'; } catch { return false; }
+}
+
+function dismiss(key) {
+  try { localStorage.setItem('easy.dismiss.' + key, '1'); } catch { /* ignore */ }
+}
+
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function isInstalled() {
+  return window.navigator.standalone === true
+    || window.matchMedia('(display-mode: standalone)').matches;
+}
 
 function greeting() {
   const h = new Date().getHours();
@@ -51,6 +73,38 @@ export default {
       el('div.hero-sub', DAY_LONG[dayKeyOf(today)] + ', ' + prettyDate(today)
         + (here ? '' : ' · away')),
     ]));
+
+    // ------------------------------------------------------------- setup ---
+    // Nothing saves without a token, so this stays until there is one.
+    if (!hasToken() && !dismissed('token')) {
+      root.appendChild(card([
+        el('div', { style: { fontWeight: '500', marginBottom: '4px' } },
+          'This device can look, but not save.'),
+        el('p.small.dim',
+          'Give Easy. a GitHub token and everything you tap here syncs to the '
+          + 'repo — and to your other devices, and to Claude.'),
+        el('div.row', { style: { marginTop: '12px', gap: '8px' } }, [
+          button('Set it up', { class: 'primary grow', onclick: () => tokenSheet(ctx) }),
+          button('Not here', {
+            class: 'ghost',
+            onclick: () => { dismiss('token'); ctx.rerender(); },
+          }),
+        ]),
+      ]));
+    }
+
+    // iOS will happily let you use this as a tab forever without ever
+    // mentioning that it can be an actual app.
+    if (isIOS() && !isInstalled() && !dismissed('install')) {
+      root.appendChild(el('div.banner.quiet', [
+        icon('plus', 16),
+        el('span.grow', 'Share → Add to Home Screen to get the icon.'),
+        el('button.icon-btn', {
+          'aria-label': 'Dismiss',
+          onclick: () => { dismiss('install'); ctx.rerender(); },
+        }, icon('close', 16)),
+      ]));
+    }
 
     // ------------------------------------------------------------ the meals --
     if (here) {
@@ -103,6 +157,7 @@ export default {
         root.appendChild(sectionTitle('Due', due.length > 3
           ? el('span.tiny.dimmer', due.length + ' waiting') : null));
         root.appendChild(card(el('div.list', due.map((e) => el('div.item', {
+          tappable: true,
           onclick: () => ctx.nav('chores'),
         }, [
           el('button.tick.due', {
@@ -119,6 +174,7 @@ export default {
       if (tasks.length) {
         root.appendChild(sectionTitle('Tasks'));
         root.appendChild(card(el('div.list', tasks.map((t) => el('div.item', {
+          tappable: true,
           onclick: () => ctx.nav('chores'),
         }, [
           el('div.grow', el('div.name', t.name)),
@@ -150,6 +206,19 @@ export default {
         ]),
         button('Open', { class: 'small ghost', onclick: () => ctx.nav('projects') }),
       ]), { class: 'flat' }));
+    }
+
+    // ------------------------------------------------------ weekly session --
+    // Only ever nags once a session has actually happened. An app that asks
+    // for a ritual you have never done is just noise.
+    const lastSession = settings().lastSession;
+    const sinceSession = daysAgo(lastSession);
+    if (sinceSession !== null && sinceSession >= 7) {
+      root.appendChild(el('div.banner.quiet', { style: { marginTop: '16px' } }, [
+        icon('dot', 16),
+        el('span', 'Last sat down with Claude ' + relDays(lastSession)
+          + '. Worth another go when you have twenty minutes.'),
+      ]));
     }
 
     // -------------------------------------------------------- quick capture --

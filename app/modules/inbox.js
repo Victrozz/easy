@@ -77,7 +77,7 @@ function composer(ctx, opts) {
 }
 
 function noteRow(note, ctx) {
-  return el('div.item.top', { onclick: () => openNote(note, ctx) }, [
+  return el('div.item.top', { tappable: true, onclick: () => openNote(note, ctx) }, [
     el('div.grow', [
       el('div.name', { class: note.handled ? 'strike' : '' }, note.text),
       el('div.meta', prettyDate(note.date || ymd()) + ' · ' + prettyTime(note.ts)),

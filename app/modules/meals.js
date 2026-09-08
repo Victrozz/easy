@@ -500,6 +500,7 @@ function renderLibrary(root, ctx) {
     root.appendChild(card(empty('Nothing matches.'), { class: 'flat' }));
   } else {
     root.appendChild(card(el('div.list', found.map((m) => el('div.item', {
+      tappable: true,
       onclick: () => editMeal(m, ctx),
     }, [
       el('div.grow', [
@@ -589,6 +590,7 @@ function renderShopping(root, ctx) {
   if (items.length) {
     root.appendChild(sectionTitle('For your meals'));
     root.appendChild(card(el('div.list', items.map((it) => el('div.item', {
+      tappable: true,
       onclick: () => toggleGot(it.text),
     }, [
       el('span.tick', { class: got.includes(it.text) ? 'done' : '' }, icon('check', 16)),
@@ -623,6 +625,7 @@ function renderShopping(root, ctx) {
 
   if (extras.length) {
     root.appendChild(card(el('div.list', extras.map((x) => el('div.item', {
+      tappable: true,
       onclick: () => toggleGot(x.text),
     }, [
       el('span.tick', { class: got.includes(x.text) ? 'done' : '' }, icon('check', 16)),

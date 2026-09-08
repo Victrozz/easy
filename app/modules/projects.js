@@ -110,7 +110,7 @@ function projectRow(p, ctx) {
   const since = daysAgo(p.lastTouched);
   const cold = since !== null && since >= 14 && p.status === 'active';
 
-  return el('div.item.top', { onclick: () => editProject(p, ctx) }, [
+  return el('div.item.top', { tappable: true, onclick: () => editProject(p, ctx) }, [
     el('div.grow', [
       el('div.name', p.name),
       p.nextStep
