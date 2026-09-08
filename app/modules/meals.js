@@ -714,11 +714,13 @@ function dayCard(ctx, date, day) {
         DAY_LONG[dk] + ' ' + parseYmd(date).getDate()),
       isToday ? el('span.pill.due', 'today') : null,
       el('div.grow'),
-      el('button.icon-btn', {
-        'aria-label': 'Mark away',
-        title: 'Not here this day',
+      // Deliberately a word, not an X. On a phone there is no tooltip, and an
+      // X here reads as "delete this day's plans" rather than "I'm not there".
+      button('Away', {
+        class: 'small ghost',
+        'aria-label': 'Mark ' + DAY_LONG[dk] + ' as away',
         onclick: () => { commit(setPresence(shownWeek, date, false)); ctx.rerender(); },
-      }, icon('close', 17)),
+      }),
     ]),
     el('div.list', slotNames.map((s) => slotRow(ctx, date, s, day.slots[s]))),
     missing.length
