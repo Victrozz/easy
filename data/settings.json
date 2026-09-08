@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "place": "Valencia",
+  "week": {
+    "mon": { "here": false, "slots": [] },
+    "tue": { "here": true, "slots": ["lunch", "dinner"] },
+    "wed": { "here": true, "slots": ["lunch", "dinner"] },
+    "thu": { "here": true, "slots": ["lunch", "dinner"] },
+    "fri": { "here": true, "slots": ["lunch"] },
+    "sat": { "here": false, "slots": [] },
+    "sun": { "here": false, "slots": [] }
+  },
+  "targets": {
+    "protein": null,
+    "fiber": null
+  }
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Easy.</title>
+<meta name="description" content="House, meals, projects. Yours.">
+
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./app/style.css">
+
+<meta name="theme-color" content="#F6F0E3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17140F" media="(prefers-color-scheme: dark)">
+
+<!-- iOS: make Add to Home Screen behave like an app rather than a bookmark. -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Easy.">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" href="./icons/icon-192.png" sizes="192x192">
+<link rel="icon" href="./icons/favicon.png" sizes="64x64">
+</head>
+<body>
+<div class="app" id="app"></div>
+<noscript>
+  <p style="padding:24px;font-family:Georgia,serif">
+    Easy. needs JavaScript. The data itself is plain JSON in the repo, so
+    nothing is locked in here.
+  </p>
+</noscript>
+<script type="module" src="./app/main.js"></script>
+</body>
+</html>
