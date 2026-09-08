@@ -254,13 +254,32 @@ export function applyMutation(doc, m) {
   }
 }
 
+// A device left in read-only mode queues changes that will never be sent.
+// Two things must not happen: the outbox growing without bound, and a tap
+// from three weeks ago landing on GitHub the moment a token is finally
+// pasted, overwriting something newer done properly on the phone.
+const MAX_OUTBOX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_OUTBOX = 400;
+
+function pruneOutbox() {
+  const cutoff = Date.now() - MAX_OUTBOX_AGE_MS;
+  const before = store.outbox.length;
+  store.outbox = store.outbox.filter((m) => !m.ts || m.ts > cutoff);
+  if (store.outbox.length > MAX_OUTBOX) {
+    store.outbox = store.outbox.slice(store.outbox.length - MAX_OUTBOX);
+  }
+  return before - store.outbox.length;
+}
+
 /** Queue a change. Applies to the screen immediately, syncs shortly after. */
 export function mutate(...mutations) {
   for (const m of mutations) {
     if (!m || !m.file) continue;
+    if (!m.ts) m.ts = Date.now();
     store.data[m.file] = applyMutation(store.data[m.file], m);
     store.outbox.push(m);
   }
+  pruneOutbox();
   lsSet(LS_OUTBOX, store.outbox);
   cacheNow();
   emit();
@@ -364,6 +383,13 @@ export async function flush() {
   if (store.outbox.length === 0) return;
   if (!hasToken()) { setStatus('readonly'); return; }
   if (!navigator.onLine) { setStatus('offline'); return; }
+
+  // Never send a change that has been sitting here for a week — by now
+  // whatever it describes has almost certainly been superseded.
+  if (pruneOutbox() > 0) {
+    lsSet(LS_OUTBOX, store.outbox);
+    if (store.outbox.length === 0) { setStatus('idle'); return; }
+  }
 
   flushing = true;
   setStatus('syncing');

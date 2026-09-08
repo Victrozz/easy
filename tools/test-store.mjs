@@ -193,6 +193,30 @@ check('utf-8 survives base64 both ways',
   JSON.parse(server.get('data/chores.json').text)
     .recurring.find((c) => c.id === 'colada').name === 'Colada y planchar — ñ é ü');
 
+// --- 9. stale queued changes never land -----------------------------------
+// A laptop left in read-only mode for a month, then given a token, must not
+// replay a month of old taps over newer state.
+S.mutate({
+  file: 'data/chores.json', op: 'patchWhere', path: ['recurring'],
+  key: 'id', match: 'bath', value: { lastDone: '2026-08-01' }, label: 'ancient tap',
+});
+S.store.outbox[S.store.outbox.length - 1].ts = Date.now() - 30 * 24 * 3600 * 1000;
+S.mutate({
+  file: 'data/chores.json', op: 'patchWhere', path: ['recurring'],
+  key: 'id', match: 'bath', value: { lastDone: '2026-09-09' }, label: 'todays tap',
+});
+await S.flush();
+const bath = JSON.parse(server.get('data/chores.json').text).recurring.find((c) => c.id === 'bath');
+check('a month-old queued change is dropped, not replayed', bath.lastDone === '2026-09-09',
+  'lastDone is ' + bath.lastDone);
+check('the fresh change still lands', S.pendingCount() === 0);
+
+// --- 10. the outbox cannot grow without bound ----------------------------
+for (let i = 0; i < 450; i++) {
+  S.mutate({ file: 'data/inbox.jsonl', op: 'push', path: [], value: { i } });
+}
+check('outbox is capped', S.pendingCount() <= 400, 'got ' + S.pendingCount());
+
 // ---------------------------------------------------------------- summary --
 
 const failed = results.filter((r) => !r.ok);
