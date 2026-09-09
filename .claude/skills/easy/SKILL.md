@@ -20,6 +20,32 @@ procedure.
   connector against `Victrozz/easy` on `main`. Read the file, then write it
   back as a commit. Same rules apply.
 
+### From chat on a phone
+
+The repo is **public**, so reading needs no connector — fetch the raw URLs:
+
+```
+https://raw.githubusercontent.com/Victrozz/easy/main/data/settings.json
+                                              .../data/meals.json
+                                              .../data/chores.json
+                                              .../data/projects.json
+                                              .../data/inbox.jsonl
+                                              .../weeks/2026-Www.json   (ISO week, Monday start)
+```
+
+Add `?v=<any random number>` to each — raw.githubusercontent caches for five
+minutes and he may have tapped something thirty seconds ago. A week file that
+404s just means that week is untouched: fall back to the default week in
+`settings.json`. That is normal, not an error.
+
+**Writing from chat needs the GitHub connector.** If it is not there or has no
+write scope, do not pretend the change landed — say plainly that you can plan
+it but not save it, and give him the result so he can enter it in the app.
+
+**On a phone, be short.** Fetch only what the question needs — not all six
+files for "what's for dinner". Answer in a few lines, no tables, no headers, no
+restating the plan back at him. He is standing in a supermarket.
+
 Never invent state you have not read. Every answer about what he ate, owes or
 planned comes from a file you just opened.
 
