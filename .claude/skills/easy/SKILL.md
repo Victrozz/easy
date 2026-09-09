@@ -1,69 +1,134 @@
 ---
 name: easy
-description: Víctor's life-admin planner, "Easy." — the repo Victrozz/easy is its database (meals, chores, projects, protein, inbox, weekly plans). Use whenever he says "easy", or asks to plan the week / this week / next week, add or retire a chore, add a meal or put protein numbers or ingredients on meals, mark himself here or away on a day, check his shopping list, look at his inbox notes, run the weekly session, or anything else about what he is eating, cooking, cleaning or planning.
+description: Víctor's life-admin planner, "Easy." — the public repo Victrozz/easy is its database (meals, chores, projects, protein, inbox, weekly plans). Use whenever he says "easy", or asks to add or plan a meal for a day, plan the week, add or retire a chore, mark a chore done, mark himself here or away, set a protein target, check his shopping list, add a note or check his inbox, touch a project, or run the weekly session.
 ---
 
 # Easy.
 
-A static PWA on GitHub Pages. **The repo is the database** — `Victrozz/easy`
-(local checkout: `C:\Users\Víctor\Documents\easy`). No server, no API. The app
-writes these files from his phone with a GitHub token; you write the same files.
+A static PWA on GitHub Pages. **The repo is the database** — `Victrozz/easy`,
+branch `main`, public. No server, no API. The app writes these files from his
+phone; you write the same files.
 
-Read `CLAUDE.md` in the repo for the full design. This skill is the operating
-procedure.
+**This file is self-sufficient. Do not read `CLAUDE.md` or the folder READMEs to
+answer a request** — everything you need is below. Read only the files the
+recipe names. Two file reads is normal; six is a sign you are exploring instead
+of acting.
 
-## Getting at the files
+## Reaching the files
 
-- **In Claude Code, in the repo** — read and edit files directly, then commit
-  and push. Pushing is what makes it appear on his phone.
-- **Anywhere else (chat, Cowork, another directory)** — go through the GitHub
-  connector against `Victrozz/easy` on `main`. Read the file, then write it
-  back as a commit. Same rules apply.
+- **Claude Code in the repo** — edit, commit, push. Pushing is what puts it on
+  his phone.
+- **Chat / anywhere else** — the GitHub connector on `Victrozz/easy`, `main`.
+  Reading also works with no connector at all, since the repo is public:
+  `https://raw.githubusercontent.com/Victrozz/easy/main/<path>?v=<random>` (the
+  `?v=` busts a five-minute CDN cache — he may have tapped something seconds
+  ago). **Writing needs the connector.** If a write fails, say so plainly and
+  give him the result to enter in the app. Never imply a change landed.
 
-### From chat on a phone
-
-The repo is **public**, so reading needs no connector — fetch the raw URLs:
+## The files
 
 ```
-https://raw.githubusercontent.com/Victrozz/easy/main/data/settings.json
-                                              .../data/meals.json
-                                              .../data/chores.json
-                                              .../data/projects.json
-                                              .../data/inbox.jsonl
-                                              .../weeks/2026-Www.json   (ISO week, Monday start)
+data/settings.json    default week, place, targets.protein, lastSession
+data/meals.json       { items: [...] }  the library
+data/chores.json      { recurring: [...], oneoff: [...] }
+data/projects.json    { items: [...] }
+data/inbox.jsonl      one note per line
+weeks/YYYY-Www.json   one per ISO week, Monday start — SPARSE
+log/YYYY-MM.jsonl     append-only history
 ```
 
-Add `?v=<any random number>` to each — raw.githubusercontent caches for five
-minutes and he may have tapped something thirty seconds ago. A week file that
-404s just means that week is untouched: fall back to the default week in
-`settings.json`. That is normal, not an error.
+**Dates.** `2026-09-07` is a Monday and is `2026-W37`; count weeks from there.
+A week file that 404s means that week is untouched — that is normal. Start from
+`{ "days": {} }` and add only the day you were asked about.
 
-**Writing from chat needs the GitHub connector.** If it is not there or has no
-write scope, do not pretend the change landed — say plainly that you can plan
-it but not save it, and give him the result so he can enter it in the app.
+**Sparse means sparse.** A day appears only once touched; anything absent falls
+back to the default week in `settings.json` (usually: Mon away, Tue–Thu lunch +
+dinner, Fri lunch, weekend away). Never write all seven days — that freezes the
+defaults and stops later changes to his usual week from applying.
 
-**On a phone, be short.** Fetch only what the question needs — not all six
-files for "what's for dinner". Answer in a few lines, no tables, no headers, no
-restating the plan back at him. He is standing in a supermarket.
+**Don't write `log/`.** The app logs its own taps; your git commits are your
+history. Use a commit message shaped like the app's: `plan: dinner 2026-09-10`,
+`add chore: regar plantas`, `week: away on 2026-09-11`.
 
-Never invent state you have not read. Every answer about what he ate, owes or
-planned comes from a file you just opened.
+## Recipes
 
-## The five rules that matter
+Each one lists everything to read, then everything to write. Nothing else.
 
-1. **Blank means unknown, never failed.** An unlogged meal was not skipped. No
-   streaks, no red marks, no "you missed" counts. Ever. When you report back on
-   a week, missing data is missing data — say "three lunches have no number on
-   them", not "you failed three lunches".
-2. **The week is not seven days.** It is the days he is in Valencia. Default is
-   in `data/settings.json`; `weeks/YYYY-Www.json` overrides per day. Do not plan
-   meals for a day he is away.
-3. **Meals and chores go quiet when away. Projects and Inbox do not.**
-4. **He never types ingredients or protein numbers — you do.** Any meal you put
-   in a plan must end up with `ingredients` and `proteinG` in `data/meals.json`,
-   or the shopping list and the protein ring are broken.
-5. **Week files are sparse.** A day appears only once touched. Never fill in a
-   week file with all seven days — it freezes the defaults into it.
+### "add a simple meal for Thursday" / "put X on Wednesday lunch"
+
+Read `data/meals.json` and `weeks/<that week>.json`.
+
+1. **Pick or invent the meal.** If nothing in the library fits, invent one and
+   append it to `items` — **you fill in `ingredients` and `proteinG`, he never
+   does.** Without them the shopping list and the protein ring are dead.
+   ```jsonc
+   { "id": "pasta-atun", "name": "Pasta con atún", "effort": "easy",
+     "tags": ["rápido"], "protein": "atún", "proteinG": 35, "favorite": false,
+     "batchable": false, "servings": 1,
+     "ingredients": ["pasta 100g", "atún en lata", "tomate frito", "cebolla"],
+     "notes": "", "timesCooked": 0, "rejections": 0, "lastCooked": null }
+   ```
+   `id` is kebab-case, `effort` is `easy` | `medium` | `project`, `proteinG` is
+   grams **per serving**.
+2. **Write the slot** into the week file at `days["YYYY-MM-DD"].slots.<slot>`:
+   ```jsonc
+   { "meal": "pasta-atun", "name": null, "mode": "cook", "status": null }
+   ```
+   `mode` is `cook` | `leftovers` | `out` | `quick`. Cooking once for three
+   lunches is one `cook` and two `leftovers` — that is prep week, there is no
+   separate mode for it. `status` stays `null`; only he sets that.
+   For a one-off with no library entry (eating out), use `"meal": null,
+   "name": "Menú del día", "mode": "out"` and put `proteinG` on the slot itself.
+3. Leave `presence` alone unless he mentioned it. Absent = his default.
+
+**Slot not stated?** Don't ask — put it in dinner, say which slot you used in
+four words, and offer to move it. Undo beats confirm.
+
+### "I'm away Thursday" / "I'm in Valencia Monday"
+
+Read the week file. Write `days["YYYY-MM-DD"].presence` = `"away"` | `"here"`.
+Nothing else — don't touch slots, don't clear meals.
+
+To change his *usual* week instead ("I'm never there Fridays now"), that is
+`settings.json` → `week.fri` = `{ "here": false, "slots": [] }`.
+
+### "I took the bins out" / "did the laundry on Sunday"
+
+Read `data/chores.json`. Set `lastDone` on that item to the date. That's it.
+
+### "new chore: water the plants weekly"
+
+Read `data/chores.json`, append to `recurring`:
+`{ "id": "regar", "name": "Water the plants", "everyDays": 7, "lastDone": null, "notes": "" }`
+`lastDone: null` = never done, so it shows as due.
+
+### "what do I need to buy?"
+
+Read the week file and `data/meals.json`. Take every slot with `mode: "cook"`,
+collect those meals' `ingredients`, merge duplicates, group roughly by aisle.
+Read nothing else. If a planned meal has no `ingredients`, fill them in and save
+that too — that is the bug, not his problem.
+
+### "set my protein target to 120"
+
+Read `data/settings.json`, set `targets.protein`. It's currently 100.
+
+### a half-thought — "might want cheap furniture"
+
+Append one line to `data/inbox.jsonl`:
+`{"id":"note_<random>","ts":<ms>,"date":"YYYY-MM-DD","text":"...","handled":false}`
+
+### "what's for dinner" / "what's due"
+
+Read **one** file — the week file for meals, `data/chores.json` for chores
+(due = `lastDone` + `everyDays` ≤ today). Answer in two lines. Do not fetch the
+rest to "have context".
+
+### the weekly session
+
+Only for "let's do easy", "plan the week", "sit down with me". It is the one
+task that reads widely, and it has its own file — fetch and follow
+`.claude/skills/easy/weekly-session.md` in this repo.
 
 ## Writing safely
 
@@ -71,57 +136,32 @@ Two writers, one hazard: reading a file, thinking, and writing back a version
 that lost a tap he made in the meantime.
 
 - Re-read the file immediately before you write it. Never write from a read
-  earlier in the conversation. In a git checkout that means `git fetch` first —
-  he taps things on his phone while you are working, and those are commits you
-  do not have. If a push is rejected, **merge, never force**: read what landed
-  and fold your change into it.
-- Change as little as possible — edit the one item, don't rewrite the list.
-- Preserve unknown fields you don't understand.
-- `log/YYYY-MM.jsonl` is append-only. Add lines, never rewrite it. It is the
-  recovery path if you clobber something.
-- If you edited app code, follow the pre-push checks in `CLAUDE.md`
-  (`check → test-store → test-model → release → push → verify-deploy --wait`).
-  Data-only edits need none of that, just a commit and push.
+  earlier in the conversation. In a git checkout, `git fetch` first — he taps
+  things on his phone while you work. If a push is rejected, **merge, never
+  force**.
+- Change as little as possible: edit the one item, don't rewrite the list.
+  Preserve fields you don't understand.
+- Never invent state you have not read. Anything you say about what he ate,
+  owes or planned comes from a file you just opened.
 
-## The weekly session
+## The rules underneath all of it
 
-He says "let's do easy" or "plan the week". **It is not an interview.** Do the
-work, ask questions as they come up inside it.
-
-1. Read the last two `weeks/` files, `log/` for the month, the coming week's
-   `notes` if it has one, and `data/inbox.jsonl`.
-2. Say what actually happened vs what was planned, plainly. If he planned seven
-   meals and cooked three, **the plan was wrong** — plan fewer.
-3. Write `weeks/YYYY-Www.json` for the coming week: his presence, a slot per
-   meal, `mode` of `cook` / `leftovers` / `out` / `quick`. Cooking once for
-   three lunches is one `cook` and two `leftovers` — that is prep week, there
-   is no separate mode for it.
-4. Don't repeat last week except favourites and easy ones.
-5. Backfill `ingredients` and `proteinG` on every meal you used. If he has a
-   protein target, check the plan against it out loud — don't silently pad it.
-6. Handle the inbox notes; mark them handled.
-7. Set `lastSession` in `data/settings.json` to today.
-
-Also sweep: chores with an old or missing `lastDone`, projects with no
-`nextStep`, meals with `proteinG: null`.
-
-## One-off asks and where they land
-
-| He says | You touch |
-|---|---|
-| "I'm not in Valencia Thursday" | `weeks/`, `days[date].presence = "away"` |
-| "add lentejas to the library" | `data/meals.json` — with ingredients and proteinG filled in |
-| "I took the bins out on Sunday" | `data/chores.json` `lastDone`, plus a `chore.done` line in `log/` |
-| "new chore: water the plants weekly" | `data/chores.json` `recurring` |
-| "what do I need to buy?" | derive from the week's `cook` slots + their meals' `ingredients` |
-| "exam Thursday, keep it easy" | `weeks/` `notes` — then plan around it |
-| a half-thought | `data/inbox.jsonl`, one JSON object per line |
+1. **Blank means unknown, never failed.** An unlogged meal was not skipped. A
+   chore nobody ticked is due, not neglected. No streaks, no red marks, no
+   "you missed" counts — anywhere, ever. Missing data is missing data: say
+   "three lunches have no number on them", never "you failed three lunches".
+2. **The week is however many days he is in Valencia**, not seven.
+3. **Meals and chores go quiet when he is away. Projects and Inbox follow him.**
+4. **He never types ingredients or protein numbers. You do.**
 
 ## Tone
 
 He built this to stop nagging himself. Report, don't scold. No "you should
-have", no motivational lines, no emoji-cheer. If a plan didn't survive contact
-with the week, that is information about the plan.
+have", no motivation, no emoji-cheer. If a plan didn't survive the week, that is
+information about the plan, not about him.
+
+**On a phone, be short.** A few lines, no tables, no headers, no restating his
+request back at him. He is standing in a supermarket.
 
 He also expects to push back hard on the app itself — if he wants a tab gone,
 delete it, don't defend it.
