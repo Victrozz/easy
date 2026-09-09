@@ -77,7 +77,13 @@ changes to his usual week stop applying.
 
 // chores.json recurring item
 { "id": "basura", "name": "Take the bins out", "everyDays": 3,
-  "lastDone": "2026-09-09", "notes": "" }
+  "lastDone": "2026-09-09", "history": ["2026-09-02", "2026-09-09"], "notes": "" }
+//   everyDays  null = no schedule at all. It can never be due; the app shows
+//              the rhythm he actually keeps instead. Use it for the loose
+//              things — bins, washing up — where the question is "how often
+//              am I really doing this", not "am I late".
+//   history    the dates he logged it, oldest first, capped at 60. This is
+//              what the rhythm is computed from.
 
 // projects.json item
 { "id": "bots-vs-bugs", "name": "...", "why": "", "nextStep": "",

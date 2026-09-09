@@ -94,13 +94,22 @@ To change his *usual* week instead ("I'm never there Fridays now"), that is
 
 ### "I took the bins out" / "did the laundry on Sunday"
 
-Read `data/chores.json`. Set `lastDone` on that item to the date. That's it.
+Read `data/chores.json`. Set `lastDone` to that date and add the same date to
+`history` (sorted, no duplicates). Both, always — `history` is what the rhythm
+of an unscheduled chore is read from, and a `lastDone` without it is a gap.
 
 ### "new chore: water the plants weekly"
 
 Read `data/chores.json`, append to `recurring`:
-`{ "id": "regar", "name": "Water the plants", "everyDays": 7, "lastDone": null, "notes": "" }`
-`lastDone: null` = never done, so it shows as due.
+`{ "id": "regar", "name": "Water the plants", "everyDays": 7, "lastDone": null, "history": [], "notes": "" }`
+`lastDone: null` = never done, so it shows as due. `everyDays` is 1 / 7 / 14 /
+30 for daily / weekly / fortnightly / monthly, or any number of days.
+
+**`everyDays: null` means no schedule at all** — it can never be due, and the
+app shows how often he actually does it instead. That is the right shape for
+the loose ones ("bins", "washing up") where he wants to notice the rhythm, not
+be told he is late. If he says "just track it" or "there's no real schedule",
+use `null`.
 
 ### "what do I need to buy?"
 
@@ -121,7 +130,8 @@ Append one line to `data/inbox.jsonl`:
 ### "what's for dinner" / "what's due"
 
 Read **one** file — the week file for meals, `data/chores.json` for chores
-(due = `lastDone` + `everyDays` ≤ today). Answer in two lines. Do not fetch the
+(due = `lastDone` + `everyDays` ≤ today; chores with `everyDays: null` are
+never due — leave them out of a "what's due" answer). Answer in two lines. Do not fetch the
 rest to "have context".
 
 ### the weekly session

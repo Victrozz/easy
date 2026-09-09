@@ -5,7 +5,7 @@
 
 import { mutate, read } from './store.js';
 import {
-  DAY_KEYS, ymd, weekDates, dayKeyOf, daysAgo, weekKey, weekFile, uid,
+  DAY_KEYS, ymd, weekDates, dayKeyOf, daysAgo, daysBetween, weekKey, weekFile, uid,
 } from './util.js';
 
 export const SETTINGS_FILE = 'data/settings.json';
@@ -377,16 +377,89 @@ export function chores() {
  * How overdue is it? Negative dueIn means overdue by that many days.
  * A chore with no lastDone has never been done — treat as due, not as a
  * failure. Nothing in this app is a failure.
+ *
+ * `everyDays: null` means the chore has no schedule at all: it is only being
+ * tracked, so it can never be late. `dueIn` is Infinity so it sorts last and
+ * never lands in a "due" list.
  */
 export function choreStatus(chore) {
   const since = daysAgo(chore.lastDone);
+  if (!chore.everyDays) return { since, dueIn: Infinity, state: 'tracked' };
   if (since === null) return { since: null, dueIn: 0, state: 'new' };
-  const dueIn = (chore.everyDays || 7) - since;
+  const dueIn = chore.everyDays - since;
   return {
     since,
     dueIn,
-    state: dueIn <= 0 ? 'due' : dueIn <= 1 ? 'soon' : 'ok',
+    state: dueIn <= 0 ? 'due' : dueIn <= SOON_DAYS ? 'soon' : 'ok',
   };
+}
+
+/** A chore due within this many days counts as "coming up". */
+export const SOON_DAYS = 3;
+
+/** How many dates of history a chore keeps. Enough to see a rhythm. */
+const HISTORY_CAP = 60;
+
+export function choreHistory(chore) {
+  return Array.isArray(chore.history) ? chore.history.slice().sort() : [];
+}
+
+/**
+ * The rhythm he actually keeps, as opposed to the one he intended: the average
+ * gap between the last few times he did it, and how many times in the last
+ * month. This is the whole point of an unscheduled chore — "am I taking the
+ * bins out far less than I think" is a question about observed frequency, not
+ * about a deadline.
+ *
+ * `everyDays: null` here means not enough history to say. That is unknown, not
+ * zero — never render it as "never".
+ */
+export function choreRhythm(chore) {
+  const h = choreHistory(chore);
+  const recent = h.filter((d) => daysAgo(d) <= 30).length;
+  if (h.length < 2) return { count: h.length, last30: recent, everyDays: null };
+  // Only the last handful of gaps: a rhythm from six months ago is not his
+  // rhythm now.
+  const use = h.slice(-8);
+  const span = daysBetween(use[0], use[use.length - 1]);
+  return {
+    count: h.length,
+    last30: recent,
+    everyDays: span / (use.length - 1),
+  };
+}
+
+/**
+ * Doing a chore is one mutation, built here so the Today tab and the Chores
+ * tab cannot drift apart on what "done" writes.
+ */
+export function choreDone(chore, date) {
+  const d = date || ymd();
+  const history = choreHistory(chore)
+    .filter((x) => x !== d)
+    .concat(d)
+    .sort()
+    .slice(-HISTORY_CAP);
+  return {
+    file: CHORES_FILE, op: 'patchWhere', path: ['recurring'],
+    key: 'id', match: chore.id,
+    value: { lastDone: d, history },
+    label: 'done: ' + chore.name,
+  };
+}
+
+/** Undo takes the whole snapshot back, not just the date. */
+export function choreUndo(chore, prev) {
+  return {
+    file: CHORES_FILE, op: 'patchWhere', path: ['recurring'],
+    key: 'id', match: chore.id,
+    value: { lastDone: (prev && prev.lastDone) || null, history: (prev && prev.history) || [] },
+    label: 'undo: ' + chore.name,
+  };
+}
+
+export function choreSnapshot(chore) {
+  return { lastDone: chore.lastDone || null, history: choreHistory(chore) };
 }
 
 export function sortedChores() {
@@ -398,7 +471,7 @@ export function sortedChores() {
 
 export function newChore(fields) {
   return Object.assign({
-    id: uid('chore'), name: '', everyDays: 7, lastDone: null, notes: '',
+    id: uid('chore'), name: '', everyDays: 7, lastDone: null, history: [], notes: '',
   }, fields || {});
 }
 

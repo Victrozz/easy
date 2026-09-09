@@ -7,7 +7,8 @@ import { el, card, button, icon, iconBtn, toast, sectionTitle, empty, copyText }
 import {
   getWeek, sortedChores, chores, projects, inbox, setPresence, settings,
   proteinTarget, dayProtein, slotProtein, mealById, mealName,
-  SLOTS, SLOT_LABEL, MODE_ICON, MODE_LABEL, commit, logEvent, CHORES_FILE,
+  SLOTS, SLOT_LABEL, MODE_ICON, MODE_LABEL, commit, logEvent,
+  choreDone, choreUndo, choreSnapshot,
 } from '../model.js';
 import {
   ymd, weekKey, weekFile, weekDates, relDays, daysAgo, DAY_LONG, dayKeyOf,
@@ -49,15 +50,11 @@ function greeting() {
 }
 
 function markChoreDone(chore, ctx) {
-  const prev = chore.lastDone || null;
-  const patch = (value, label) => ({
-    file: CHORES_FILE, op: 'patchWhere', path: ['recurring'],
-    key: 'id', match: chore.id, value: { lastDone: value }, label: label + chore.name,
-  });
-  commit(patch(ymd(), 'done: '), logEvent('chore.done', { chore: chore.id, name: chore.name }));
+  const prev = choreSnapshot(chore);
+  commit(choreDone(chore), logEvent('chore.done', { chore: chore.id, name: chore.name }));
   toast(chore.name + ' — done', '', {
     label: 'Undo',
-    onclick: () => { commit(patch(prev, 'undo: ')); ctx.rerender(); },
+    onclick: () => { commit(choreUndo(chore, prev)); ctx.rerender(); },
   });
 }
 

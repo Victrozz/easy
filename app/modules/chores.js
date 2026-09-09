@@ -1,7 +1,14 @@
 // Chores — recurring upkeep plus one-off tasks.
 //
-// Sorted by how overdue they are. Nothing is ever red or scolding: a chore
-// that has not been done in a month is just a chore that is due.
+// Two kinds live here. A chore with an interval has a due date and sorts by
+// how overdue it is. A chore with `everyDays: null` has no schedule at all:
+// it is only tracked, so it can never be late, and what it shows instead is
+// the rhythm he actually keeps — "usually every 6 days, 4 times this month".
+// That is the honest answer to "am I taking the bins out far less than I
+// think", and it is a description, not an accusation.
+//
+// Nothing here is ever red or scolding. A chore not done in a month is just a
+// chore that is due.
 
 import {
   el, card, button, icon, sheet, confirmSheet, field, textInput, textArea,
@@ -9,40 +16,48 @@ import {
 } from '../ui.js';
 import {
   CHORES_FILE, chores, sortedChores, newChore, commit, logEvent,
+  choreDone, choreUndo, choreSnapshot, choreRhythm, choreHistory, SOON_DAYS,
 } from '../model.js';
 import { ymd, relDays, slug } from '../util.js';
 
-// Remembers the previous date so an accidental tap is one tap to undo.
+// Remembers the previous state so an accidental tap is one tap to undo.
 const undo = new Map();
 
 const EVERY_PRESETS = [
   { value: 1, label: 'Daily' },
-  { value: 2, label: '2 days' },
   { value: 3, label: '3 days' },
   { value: 7, label: 'Weekly' },
-  { value: 14, label: '2 weeks' },
+  { value: 14, label: 'Fortnightly' },
   { value: 30, label: 'Monthly' },
+  { value: null, label: 'No schedule' },
 ];
 
 function everyLabel(n) {
+  if (!n) return 'no schedule';
   const p = EVERY_PRESETS.find((x) => x.value === n);
   return p ? p.label : 'every ' + n + ' days';
 }
 
-// ------------------------------------------------------------------ actions --
-
-function setLastDone(chore, value, label) {
-  return {
-    file: CHORES_FILE, op: 'patchWhere', path: ['recurring'],
-    key: 'id', match: chore.id, value: { lastDone: value },
-    label: label + chore.name,
-  };
+/**
+ * What an unscheduled chore says about itself. No deadline exists, so this is
+ * only ever a description: how often he actually does it, and when last.
+ * "unknown" is a real answer here — two taps is not a rhythm.
+ */
+function rhythmText(chore) {
+  const r = choreRhythm(chore);
+  if (!chore.lastDone) return 'no schedule · not logged yet';
+  const bits = [relDays(chore.lastDone)];
+  if (r.everyDays) bits.push('usually every ' + Math.round(r.everyDays) + ' days');
+  else bits.push('logged once');
+  return bits.join(' · ');
 }
 
+// ------------------------------------------------------------------ actions --
+
 function restore(chore, ctx) {
-  const prev = undo.has(chore.id) ? undo.get(chore.id) : null;
+  const prev = undo.get(chore.id) || null;
   undo.delete(chore.id);
-  commit(setLastDone(chore, prev, 'undo: '));
+  commit(choreUndo(chore, prev));
   ctx.rerender();
 }
 
@@ -53,12 +68,12 @@ function markDone(chore, ctx) {
     restore(chore, ctx);
     return;
   }
-  undo.set(chore.id, chore.lastDone || null);
+  undo.set(chore.id, choreSnapshot(chore));
   commit(
-    setLastDone(chore, today, 'done: '),
+    choreDone(chore),
     logEvent('chore.done', { chore: chore.id, name: chore.name }),
   );
-  toast(chore.name + ' — done', '', { label: 'Undo', onclick: () => restore(chore, ctx) });
+  toast(chore.name + ' — logged', '', { label: 'Undo', onclick: () => restore(chore, ctx) });
 }
 
 function toggleTask(task) {
@@ -85,14 +100,20 @@ function editChore(chore, ctx) {
 
     const everyWrap = el('div');
     const custom = numberInput(draft.everyDays, { min: 1, max: 365 });
+    const customField = field('or every N days', custom);
+    const trackHint = el('small.dim', { style: { display: 'block', margin: '-4px 0 12px' } },
+      'No due date. You just log it, and the list shows how often you actually do it.');
     const drawEvery = () => {
       everyWrap.replaceChildren(
-        chips(EVERY_PRESETS, draft.everyDays, (v) => {
+        chips(EVERY_PRESETS, draft.everyDays || null, (v) => {
           draft.everyDays = v;
-          custom.value = v;
+          custom.value = v || '';
           drawEvery();
         }),
       );
+      // A chore with no schedule has nothing to count days towards.
+      customField.hidden = !draft.everyDays;
+      trackHint.hidden = !!draft.everyDays;
     };
     drawEvery();
     custom.addEventListener('input', () => {
@@ -100,11 +121,15 @@ function editChore(chore, ctx) {
       if (v > 0) { draft.everyDays = v; drawEvery(); }
     });
     body.appendChild(field('How often', everyWrap));
-    body.appendChild(field('or every N days', custom));
+    body.appendChild(trackHint);
+    body.appendChild(customField);
 
     // So "I changed the sheets on Sunday" is a date, not a lie about today.
     const last = dateInput(draft.lastDone || '', { max: ymd() });
-    body.appendChild(field('Last done', last, 'Leave it empty if never. Sets when it is next due.'));
+    body.appendChild(field('Last done', last,
+      draft.everyDays
+        ? 'Leave it empty if never. Sets when it is next due.'
+        : 'Leave it empty if never.'));
 
     const notes = textArea(draft.notes, { placeholder: 'Anything worth remembering' });
     body.appendChild(field('Notes', notes));
@@ -116,10 +141,17 @@ function editChore(chore, ctx) {
         onclick: () => {
           const n = name.value.trim();
           if (!n) { toast('Give it a name'); return; }
+          // Backdating here ("I did it on Sunday") is a real occurrence, so it
+          // joins the history the rhythm is read from.
+          const lastDone = last.value || null;
+          const history = choreHistory({ history: draft.history });
+          if (lastDone && !history.includes(lastDone)) history.push(lastDone);
           const value = Object.assign({}, draft, {
             name: n,
             notes: notes.value.trim(),
-            lastDone: last.value || null,
+            lastDone,
+            history: history.sort(),
+            everyDays: draft.everyDays || null,
             id: isNew ? slug(n) : draft.id,
           });
           if (isNew) {
@@ -200,17 +232,25 @@ function choreRow(entry, ctx) {
     onclick: (e) => { e.stopPropagation(); markDone(chore, ctx); ctx.rerender(); },
   }, icon('check', 17));
 
+  const tracked = status.state === 'tracked';
+  const rhythm = tracked ? choreRhythm(chore) : null;
+
   let metaText;
-  if (doneToday) metaText = 'done today';
+  if (doneToday) metaText = tracked ? 'logged today' : 'done today';
+  else if (tracked) metaText = rhythmText(chore);
   else if (status.state === 'new') metaText = everyLabel(chore.everyDays) + ' · never done';
   else if (status.dueIn <= 0) metaText = everyLabel(chore.everyDays) + ' · ' + relDays(chore.lastDone);
   else metaText = everyLabel(chore.everyDays) + ' · in ' + status.dueIn + ' day' + (status.dueIn === 1 ? '' : 's');
 
-  const pill = doneToday
-    ? el('span.pill.ok', 'done')
-    : status.dueIn <= 0
-      ? el('span.pill.due', status.state === 'new' ? 'due' : (-status.dueIn === 0 ? 'today' : (-status.dueIn) + 'd over'))
-      : null;
+  // An unscheduled chore cannot be late, so it never gets a due pill. It gets
+  // a count instead: the answer to "am I actually doing this".
+  let pill = null;
+  if (doneToday) pill = el('span.pill.ok', tracked ? 'logged' : 'done');
+  else if (tracked) pill = rhythm.last30 ? el('span.pill', rhythm.last30 + '× / 30d') : null;
+  else if (status.dueIn <= 0) {
+    pill = el('span.pill.due', status.state === 'new' ? 'due'
+      : (-status.dueIn === 0 ? 'today' : (-status.dueIn) + 'd over'));
+  }
 
   return el('div.item', { tappable: true, onclick: () => editChore(chore, ctx) }, [
     tick,
@@ -281,8 +321,18 @@ export default {
 
   render(root, ctx) {
     const all = sortedChores();
-    const due = all.filter((e) => e.status.dueIn <= 0 && e.chore.lastDone !== ymd());
-    const rest = all.filter((e) => !(e.status.dueIn <= 0 && e.chore.lastDone !== ymd()));
+    const today = ymd();
+    const scheduled = all.filter((e) => e.status.state !== 'tracked');
+    // Longest untouched first — that is the thing worth noticing.
+    const tracked = all
+      .filter((e) => e.status.state === 'tracked')
+      .sort((a, b) => (b.status.since === null ? 1e9 : b.status.since)
+        - (a.status.since === null ? 1e9 : a.status.since));
+
+    const isDue = (e) => e.status.dueIn <= 0 && e.chore.lastDone !== today;
+    const due = scheduled.filter(isDue);
+    const soon = scheduled.filter((e) => !isDue(e) && e.status.dueIn > 0 && e.status.dueIn <= SOON_DAYS);
+    const rest = scheduled.filter((e) => !isDue(e) && !(e.status.dueIn > 0 && e.status.dueIn <= SOON_DAYS));
     const { oneoff } = chores();
     const openTasks = oneoff.filter((t) => !t.done);
     const doneTasks = oneoff.filter((t) => t.done);
@@ -290,7 +340,7 @@ export default {
     if (all.length === 0 && oneoff.length === 0) {
       root.appendChild(card(empty(
         'Nothing here yet.',
-        'Add the things you keep forgetting — bins, sheets, the bathroom.',
+        'Anything on a cycle — bins, sheets, the bathroom. Or with no schedule at all, just to see how often you do it.',
       )));
       root.appendChild(button([icon('plus', 16), 'Add a chore'], {
         class: 'primary wide', onclick: () => editChore(null, ctx),
@@ -303,9 +353,23 @@ export default {
       root.appendChild(card(el('div.list', due.map((e) => choreRow(e, ctx))), { class: 'pad0' }));
     }
 
+    if (soon.length) {
+      root.appendChild(sectionTitle('Coming up'));
+      root.appendChild(card(el('div.list', soon.map((e) => choreRow(e, ctx))), { class: 'pad0' }));
+    }
+
     if (rest.length) {
-      root.appendChild(sectionTitle(due.length ? 'Later' : 'Chores'));
+      root.appendChild(sectionTitle(due.length || soon.length ? 'Later' : 'Chores'));
       root.appendChild(card(el('div.list', rest.map((e) => choreRow(e, ctx))), { class: 'pad0' }));
+    }
+
+    // No schedule, no deadline: a record of what he actually does, so a gap is
+    // something he notices himself rather than something the app tells him off
+    // about.
+    if (tracked.length) {
+      root.appendChild(sectionTitle('Just tracking',
+        el('span.tiny.dimmer', 'tap to log')));
+      root.appendChild(card(el('div.list', tracked.map((e) => choreRow(e, ctx))), { class: 'pad0' }));
     }
 
     root.appendChild(el('div', { style: { marginTop: '12px' } },

@@ -139,6 +139,56 @@ check('settings fill in a place when missing', (() => {
   return settings().place === 'Valencia';
 })());
 
+// ------------------------------------------------------------------ chores --
+//
+// The point of an unscheduled chore is that it can never be late. If any of
+// these start failing, the Chores tab has quietly grown a way to nag him.
+
+const { choreStatus, choreRhythm, choreDone, choreUndo, choreSnapshot, CHORES_FILE } = model;
+const back = (n) => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
+};
+
+check('a scheduled chore past its interval is due',
+  choreStatus({ everyDays: 7, lastDone: back(9) }).dueIn === -2);
+check('a chore never done is due, not failed',
+  choreStatus({ everyDays: 7, lastDone: null }).state === 'new');
+check('a chore due in three days is "soon"',
+  choreStatus({ everyDays: 7, lastDone: back(4) }).state === 'soon');
+
+const loose = { id: 'basura', name: 'Bins', everyDays: null, lastDone: back(30), history: [] };
+check('an unscheduled chore is tracked, never due',
+  choreStatus(loose).state === 'tracked');
+check('an unscheduled chore can never be late, however long it has been',
+  choreStatus(loose).dueIn === Infinity);
+check('a tracked chore still knows how long it has been',
+  choreStatus(loose).since === 30);
+
+check('one log is not a rhythm', choreRhythm({ history: [back(3)] }).everyDays === null);
+check('a rhythm is the average gap',
+  choreRhythm({ history: [back(12), back(8), back(4), back(0)] }).everyDays === 4);
+check('the 30-day count only counts the last 30 days',
+  choreRhythm({ history: [back(40), back(35), back(10), back(2)] }).last30 === 2);
+
+store.data[CHORES_FILE] = { recurring: [Object.assign({}, loose)] };
+const snap = choreSnapshot(store.data[CHORES_FILE].recurring[0]);
+commit(choreDone(store.data[CHORES_FILE].recurring[0]));
+check('logging a chore records the date in its history',
+  store.data[CHORES_FILE].recurring[0].history.join() === ymd());
+check('logging a chore sets lastDone',
+  store.data[CHORES_FILE].recurring[0].lastDone === ymd());
+
+commit(choreDone(store.data[CHORES_FILE].recurring[0]));
+check('logging twice in a day does not double up the history',
+  store.data[CHORES_FILE].recurring[0].history.length === 1);
+
+commit(choreUndo(store.data[CHORES_FILE].recurring[0], snap));
+check('undo takes the history back too, not just the date',
+  store.data[CHORES_FILE].recurring[0].history.length === 0
+  && store.data[CHORES_FILE].recurring[0].lastDone === loose.lastDone);
+
 // ------------------------------------------------------------------- done --
 
 const failed = results.filter((r) => !r.ok).length;
