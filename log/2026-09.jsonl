@@ -2,3 +2,4 @@
 {"ts":1788949406665,"date":"2026-09-09","type":"inbox.add","text":"changed rooms in the flat, might want to buy some cheap furniture or accessories"}
 {"ts":1788949843991,"date":"2026-09-09","type":"device.connected","agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/15"}
 {"ts":1788949961119,"date":"2026-09-09","type":"meal.planned","slot":"lunch","meal":"lasaña del mercadona","mode":"out"}
+{"ts":1788951414389,"date":"2026-09-09","type":"project.touched","project":"bots-vs-bugs","name":"Bots vs Bugs"}
