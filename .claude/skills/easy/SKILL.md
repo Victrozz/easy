@@ -45,7 +45,10 @@ Two writers, one hazard: reading a file, thinking, and writing back a version
 that lost a tap he made in the meantime.
 
 - Re-read the file immediately before you write it. Never write from a read
-  earlier in the conversation.
+  earlier in the conversation. In a git checkout that means `git fetch` first —
+  he taps things on his phone while you are working, and those are commits you
+  do not have. If a push is rejected, **merge, never force**: read what landed
+  and fold your change into it.
 - Change as little as possible — edit the one item, don't rewrite the list.
 - Preserve unknown fields you don't understand.
 - `log/YYYY-MM.jsonl` is append-only. Add lines, never rewrite it. It is the
