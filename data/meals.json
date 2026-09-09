@@ -6,12 +6,23 @@
       "id": "lentejas",
       "name": "Lentejas",
       "effort": "easy",
-      "tags": ["cuchara", "invierno"],
+      "tags": [
+        "cuchara",
+        "invierno"
+      ],
       "protein": "lentejas",
       "favorite": false,
       "batchable": true,
       "servings": 4,
-      "ingredients": ["lentejas 500g", "zanahoria", "cebolla", "pimiento verde", "chorizo", "laurel", "pimentón"],
+      "ingredients": [
+        "lentejas 500g",
+        "zanahoria",
+        "cebolla",
+        "pimiento verde",
+        "chorizo",
+        "laurel",
+        "pimentón"
+      ],
       "notes": "Batches beautifully. Better on day two.",
       "timesCooked": 0,
       "rejections": 0,
@@ -21,27 +32,44 @@
       "id": "garbanzos-espinacas",
       "name": "Garbanzos con espinacas",
       "effort": "easy",
-      "tags": ["cuchara"],
+      "tags": [
+        "cuchara"
+      ],
       "protein": "garbanzos",
       "favorite": false,
       "batchable": true,
       "servings": 3,
-      "ingredients": ["garbanzos cocidos 2 botes", "espinacas congeladas", "ajo", "pimentón", "comino", "pan duro"],
+      "ingredients": [
+        "garbanzos cocidos 2 botes",
+        "espinacas congeladas",
+        "ajo",
+        "pimentón",
+        "comino",
+        "pan duro"
+      ],
       "notes": "Twenty minutes from tins. Good default when the fridge is empty.",
       "timesCooked": 0,
-      "rejections": 0,
+      "rejections": 1,
       "lastCooked": null
     },
     {
       "id": "pasta-con-atun",
       "name": "Pasta con atún",
       "effort": "easy",
-      "tags": ["rápido"],
+      "tags": [
+        "rápido"
+      ],
       "protein": "atún",
       "favorite": false,
       "batchable": false,
       "servings": 1,
-      "ingredients": ["pasta", "atún en lata", "tomate frito", "cebolla", "aceitunas"],
+      "ingredients": [
+        "pasta",
+        "atún en lata",
+        "tomate frito",
+        "cebolla",
+        "aceitunas"
+      ],
       "notes": "The fifteen-minute one.",
       "timesCooked": 0,
       "rejections": 0,
@@ -51,12 +79,21 @@
       "id": "pollo-al-horno",
       "name": "Pollo al horno con patatas",
       "effort": "medium",
-      "tags": ["horno"],
+      "tags": [
+        "horno"
+      ],
       "protein": "pollo",
       "favorite": false,
       "batchable": true,
       "servings": 3,
-      "ingredients": ["muslos de pollo", "patatas", "cebolla", "limón", "romero", "aceite"],
+      "ingredients": [
+        "muslos de pollo",
+        "patatas",
+        "cebolla",
+        "limón",
+        "romero",
+        "aceite"
+      ],
       "notes": "One tray. Cook a lot, eat it across three lunches.",
       "timesCooked": 0,
       "rejections": 0,
@@ -66,12 +103,19 @@
       "id": "tortilla-de-patatas",
       "name": "Tortilla de patatas",
       "effort": "medium",
-      "tags": ["clásico"],
+      "tags": [
+        "clásico"
+      ],
       "protein": "huevo",
       "favorite": false,
       "batchable": true,
       "servings": 3,
-      "ingredients": ["patatas 1kg", "huevos 6", "cebolla", "aceite de oliva"],
+      "ingredients": [
+        "patatas 1kg",
+        "huevos 6",
+        "cebolla",
+        "aceite de oliva"
+      ],
       "notes": "Lasts days in the fridge and is fine cold.",
       "timesCooked": 0,
       "rejections": 0,
@@ -81,12 +125,21 @@
       "id": "arroz-con-huevo",
       "name": "Arroz con verduras y huevo",
       "effort": "easy",
-      "tags": ["rápido", "vaciar-nevera"],
+      "tags": [
+        "rápido",
+        "vaciar-nevera"
+      ],
       "protein": "huevo",
       "favorite": false,
       "batchable": false,
       "servings": 1,
-      "ingredients": ["arroz", "huevos", "verdura congelada", "soja", "ajo"],
+      "ingredients": [
+        "arroz",
+        "huevos",
+        "verdura congelada",
+        "soja",
+        "ajo"
+      ],
       "notes": "Whatever vegetables are dying in the drawer.",
       "timesCooked": 0,
       "rejections": 0,
@@ -96,12 +149,20 @@
       "id": "salmon-plancha",
       "name": "Salmón a la plancha con ensalada",
       "effort": "easy",
-      "tags": ["sano"],
+      "tags": [
+        "sano"
+      ],
       "protein": "salmón",
       "favorite": false,
       "batchable": false,
       "servings": 1,
-      "ingredients": ["salmón", "lechuga", "tomate", "limón", "aceite"],
+      "ingredients": [
+        "salmón",
+        "lechuga",
+        "tomate",
+        "limón",
+        "aceite"
+      ],
       "notes": "Ten minutes, high protein.",
       "timesCooked": 0,
       "rejections": 0,
@@ -111,12 +172,22 @@
       "id": "ensalada-de-pasta",
       "name": "Ensalada de pasta",
       "effort": "easy",
-      "tags": ["frío", "verano"],
+      "tags": [
+        "frío",
+        "verano"
+      ],
       "protein": "atún",
       "favorite": false,
       "batchable": true,
       "servings": 3,
-      "ingredients": ["pasta corta", "atún", "tomate cherry", "maíz", "huevo cocido", "mayonesa"],
+      "ingredients": [
+        "pasta corta",
+        "atún",
+        "tomate cherry",
+        "maíz",
+        "huevo cocido",
+        "mayonesa"
+      ],
       "notes": "Make a big bowl, eat cold for days. Good in the heat.",
       "timesCooked": 0,
       "rejections": 0,
@@ -126,12 +197,22 @@
       "id": "merluza-al-horno",
       "name": "Merluza al horno",
       "effort": "easy",
-      "tags": ["sano", "horno"],
+      "tags": [
+        "sano",
+        "horno"
+      ],
       "protein": "merluza",
       "favorite": false,
       "batchable": false,
       "servings": 1,
-      "ingredients": ["merluza", "patata", "cebolla", "ajo", "perejil", "vino blanco"],
+      "ingredients": [
+        "merluza",
+        "patata",
+        "cebolla",
+        "ajo",
+        "perejil",
+        "vino blanco"
+      ],
       "notes": "",
       "timesCooked": 0,
       "rejections": 0,
@@ -141,12 +222,19 @@
       "id": "bocadillo",
       "name": "Bocadillo de lo que haya",
       "effort": "easy",
-      "tags": ["rápido", "sin-cocinar"],
+      "tags": [
+        "rápido",
+        "sin-cocinar"
+      ],
       "protein": "jamón",
       "favorite": false,
       "batchable": false,
       "servings": 1,
-      "ingredients": ["pan", "jamón o queso", "tomate"],
+      "ingredients": [
+        "pan",
+        "jamón o queso",
+        "tomate"
+      ],
       "notes": "Not a plan, but it counts and it should be in the list.",
       "timesCooked": 0,
       "rejections": 0,
