@@ -1,3 +1,14 @@
 {
-  "days": {}
+  "days": {
+    "2026-09-09": {
+      "slots": {
+        "lunch": {
+          "meal": null,
+          "name": "lasaña del mercadona",
+          "mode": "out",
+          "status": null
+        }
+      }
+    }
+  }
 }
