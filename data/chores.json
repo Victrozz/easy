@@ -1,5 +1,13 @@
 {
   "version": 1,
-  "recurring": [],
+  "recurring": [
+    {
+      "id": "mercadona",
+      "name": "mercadona",
+      "everyDays": 7,
+      "lastDone": "2026-09-09",
+      "notes": ""
+    }
+  ],
   "oneoff": []
 }
