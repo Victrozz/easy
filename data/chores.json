@@ -1,5 +1,14 @@
 {
   "version": 1,
-  "recurring": [],
+  "recurring": [
+    {
+      "id": "take-trash-out",
+      "name": "take trash out",
+      "everyDays": null,
+      "lastDone": null,
+      "history": [],
+      "notes": ""
+    }
+  ],
   "oneoff": []
 }
