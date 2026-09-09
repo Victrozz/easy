@@ -8,6 +8,14 @@
       "lastDone": null,
       "history": [],
       "notes": ""
+    },
+    {
+      "id": "clean-bathroom",
+      "name": "clean bathroom",
+      "everyDays": 7,
+      "lastDone": null,
+      "history": [],
+      "notes": ""
     }
   ],
   "oneoff": []
