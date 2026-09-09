@@ -16,6 +16,16 @@
     },
     "2026-09-11": {
       "presence": "here"
+    },
+    "2026-09-09": {
+      "slots": {
+        "lunch": {
+          "meal": "garbanzos-espinacas",
+          "name": null,
+          "mode": "cook",
+          "status": null
+        }
+      }
     }
   }
 }
