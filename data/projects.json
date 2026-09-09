@@ -9,6 +9,15 @@
       "lastTouched": null,
       "status": "active",
       "notes": "M0-M3a done, M3b half. Steps live in the pvz repo, not here."
+    },
+    {
+      "id": "easy",
+      "name": "Easy.",
+      "why": "some ui is off, and some features are not like i would want them",
+      "nextStep": "consolidate design",
+      "lastTouched": "2026-09-09",
+      "status": "active",
+      "notes": ""
     }
   ]
 }
