@@ -1,2 +1,10 @@
 {"ts":1788908921723,"date":"2026-09-09","type":"app.deployed","note":"Easy. went live. First entry — everything after this is yours."}
 {"ts":1788940560394,"date":"2026-09-09","type":"device.connected","agent":"Mozilla/5.0 (iPhone; CPU iPhone OS 17_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like"}
+{"ts":1788940569197,"date":"2026-09-09","type":"chore.done","chore":"basura","name":"Take the bins out"}
+{"ts":1788940571118,"date":"2026-09-09","type":"chore.done","chore":"platos","name":"Wash up properly"}
+{"ts":1788940571957,"date":"2026-09-09","type":"chore.done","chore":"bano","name":"Clean the bathroom"}
+{"ts":1788940572537,"date":"2026-09-09","type":"chore.done","chore":"suelo","name":"Sweep and mop"}
+{"ts":1788940573174,"date":"2026-09-09","type":"chore.done","chore":"sabanas","name":"Change the sheets"}
+{"ts":1788940574504,"date":"2026-09-09","type":"chore.done","chore":"colada","name":"Laundry"}
+{"ts":1788940575090,"date":"2026-09-09","type":"chore.done","chore":"nevera","name":"Clear out the fridge"}
+{"ts":1788940575740,"date":"2026-09-09","type":"chore.done","chore":"compra","name":"Big shop"}
