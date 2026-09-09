@@ -411,8 +411,21 @@ export function promptSheet(title, opts) {
 
 // ------------------------------------------------------------ form controls --
 
+/**
+ * A labelled row in a sheet.
+ *
+ * Only a real form control gets a real <label>. A <label> forwards every click
+ * inside it to the first labelable element it contains, so wrapping a row of
+ * chip buttons in one meant tapping any chip also fired a click on the first
+ * chip — which won, every time. That looked like "the highlight jumps to the
+ * first option and sticks", and it was setting the value too, not just the
+ * highlight.
+ */
 export function field(label, control, hint) {
-  return el('label.field', [
+  const tag = control && /^(INPUT|TEXTAREA|SELECT)$/.test(control.tagName || '')
+    ? 'label.field'
+    : 'div.field';
+  return el(tag, [
     label ? el('span', label) : null,
     control,
     hint ? el('small.dim', hint) : null,
