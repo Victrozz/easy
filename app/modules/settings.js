@@ -1,20 +1,23 @@
-// Settings — the token, the default week, and the honest sync status.
+// Settings — the token, you, the default week, and the honest sync status.
 //
 // Reached from the gear in the header rather than the tab bar. You should
-// need it twice: once to paste a token, once a year when it expires.
+// need it rarely: once to paste a token, once to set a protein target, once
+// a year when the token expires.
 
 import {
-  el, card, button, icon, field, chips, toast,
-  sectionTitle, confirmSheet, sheet, multiChips,
+  el, card, button, icon, field, chips, toast, promptSheet,
+  sectionTitle, confirmSheet, sheet, multiChips, settingRow,
 } from '../ui.js';
 import { CONFIG } from '../config.js';
 import {
   store, getToken, setToken, hasToken, flush, refresh, pendingCount, discardOutbox,
 } from '../store.js';
 import {
-  SETTINGS_FILE, SLOTS, SLOT_LABEL, settings, setDayDefault, commit, logEvent,
+  SETTINGS_FILE, SLOTS, SLOT_LABEL, settings, setDayDefault, setPlace,
+  proteinTarget, commit, logEvent,
 } from '../model.js';
-import { DAY_KEYS, DAY_LONG, prettyTime } from '../util.js';
+import { DAY_KEYS, DAY_LONG, prettyTime, relDays } from '../util.js';
+import { targetSheet } from './protein.js';
 
 const THEME_KEY = 'easy.theme';
 
@@ -50,9 +53,11 @@ function dayEditor(dk, ctx) {
           : 'away'),
       ]),
       el('button.toggle', {
+        type: 'button',
         style: { width: 'auto' },
         class: cfg.here ? 'on' : '',
         'aria-label': DAY_LONG[dk] + ' default',
+        'aria-pressed': cfg.here ? 'true' : 'false',
         onclick: () => {
           commit(setDayDefault(dk, {
             here: !cfg.here,
@@ -206,6 +211,29 @@ export default {
       ]));
     }
 
+    // ------------------------------------------------------------------ you --
+    const s = settings();
+    const target = proteinTarget();
+    root.appendChild(sectionTitle('You'));
+    root.appendChild(card([
+      settingRow('Where the flat is', button(s.place, {
+        class: 'small',
+        onclick: async () => {
+          const v = await promptSheet('Where the flat is', {
+            value: s.place, placeholder: 'Valencia',
+            hint: 'The place meals and chores belong to. Away days are anywhere else.',
+          });
+          if (!v) return;
+          commit(setPlace(v));
+          ctx.rerender();
+        },
+      }), 'Meals and chores live here'),
+      settingRow('Protein target', button(target ? target + ' g a day' : 'Not set', {
+        class: 'small' + (target ? '' : ' soft'),
+        onclick: () => targetSheet(ctx),
+      }), 'Fills the ring on Today'),
+    ]));
+
     // -------------------------------------------------------- default week --
     root.appendChild(sectionTitle('Your usual week'));
     root.appendChild(el('p.small.dim',
@@ -224,6 +252,26 @@ export default {
       applyTheme(v);
       ctx.rerender();
     }));
+
+    // -------------------------------------------------------------- claude --
+    root.appendChild(sectionTitle('Claude'));
+    root.appendChild(card([
+      el('div.row', { style: { marginBottom: '10px' } }, [
+        icon('spark', 20),
+        el('div.grow', [
+          el('div', { style: { fontWeight: '500' } }, 'Last session ' + (s.lastSession ? relDays(s.lastSession) : 'never')),
+          el('div.small.dim', 'Claude reads and writes the same files this app does. '
+            + 'Anything you can tap here, you can also just say.'),
+        ]),
+      ]),
+      el('ul.say', [
+        el('li', 'Plan next week, keep it easy, no fish.'),
+        el('li', 'Put protein numbers on all my meals.'),
+        el('li', 'Add a chore: water the plants every 5 days.'),
+        el('li', 'I did the sheets on Sunday, not today.'),
+        el('li', 'Retire the tortilla, I never make it.'),
+      ]),
+    ]));
 
     // --------------------------------------------------------------- about --
     root.appendChild(sectionTitle('About'));

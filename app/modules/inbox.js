@@ -5,7 +5,7 @@
 // would never think to say out loud when asked "so what's new".
 
 import {
-  el, card, button, icon, sheet, confirmSheet, toast, sectionTitle, empty,
+  el, card, button, icon, sheet, confirmSheet, promptSheet, toast, sectionTitle, empty,
 } from '../ui.js';
 import { INBOX_FILE, inbox, addInbox, commit, logEvent } from '../model.js';
 import { prettyDate, prettyTime, ymd } from '../util.js';
@@ -22,23 +22,40 @@ function send(ctx) {
   ctx.rerender();
 }
 
+function patchNote(note, value, label) {
+  return {
+    file: INBOX_FILE, op: 'patchWhere', path: [],
+    key: 'id', match: note.id, value, label,
+  };
+}
+
 function openNote(note, ctx) {
   sheet(prettyDate(note.date || ymd()), (body, done) => {
-    body.appendChild(el('p.sheet-text', note.text));
+    body.appendChild(el('p.sheet-text', { style: { color: 'var(--ink)' } }, note.text));
     body.appendChild(el('div.sheet-actions', [
-      button(note.handled ? 'Mark unhandled' : 'Mark handled', {
+      button([icon('edit', 15), 'Edit'], {
         class: 'ghost',
-        onclick: () => {
-          commit({
-            file: INBOX_FILE, op: 'patchWhere', path: [],
-            key: 'id', match: note.id, value: { handled: !note.handled },
-            label: 'inbox: handled',
+        onclick: async () => {
+          done();
+          const text = await promptSheet('Edit note', {
+            value: note.text, multiline: true, rows: 4,
           });
+          if (text === undefined || text === note.text) return;
+          commit(patchNote(note, { text }, 'inbox: edit'));
+          ctx.rerender();
+        },
+      }),
+      button(note.handled ? 'Mark unhandled' : 'Mark handled', {
+        class: note.handled ? 'ghost' : 'primary',
+        onclick: () => {
+          commit(patchNote(note, { handled: !note.handled }, 'inbox: handled'));
           done();
         },
       }),
+    ]));
+    body.appendChild(el('div', { style: { marginTop: '10px' } },
       button('Delete', {
-        class: 'ghost danger',
+        class: 'ghost danger wide',
         onclick: async () => {
           const ok = await confirmSheet('Delete this note?', note.text, 'Delete', true);
           if (!ok) return;
@@ -48,9 +65,8 @@ function openNote(note, ctx) {
           });
           done();
         },
-      }),
-    ]));
-  }).then(() => ctx.rerender());
+      })));
+  }, { noAutoFocus: true }).then(() => ctx.rerender());
 }
 
 function composer(ctx, opts) {
@@ -71,7 +87,7 @@ function composer(ctx, opts) {
     input,
     el('div.row', [
       el('span.tiny.dimmer.grow', draft.trim() ? 'Ctrl+Enter to save' : ''),
-      button('Save', { class: 'primary', onclick: () => send(ctx) }),
+      button([icon('send', 15), 'Save'], { class: 'primary', onclick: () => send(ctx) }),
     ]),
   ]);
 }
@@ -108,7 +124,7 @@ export default {
     if (notes.length === 0) {
       root.appendChild(card(empty(
         'Empty.',
-        'Half-thoughts, things to buy, things to ask Claude about later.',
+        'Half-thoughts, things to buy, things to ask Claude about. It reads all of them.',
       ), { class: 'flat' }));
       return;
     }

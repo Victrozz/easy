@@ -9,7 +9,8 @@ recoverable.
 
 Event types: `chore.done`, `task.done`, `meal.planned`, `meal.ate`,
 `meal.other`, `meal.skipped`, `meal.rejected`, `meal.moved`, `meal.batched`,
-`project.touched`, `inbox.add`.
+`extra.added`, `protein.target`, `week.note`, `project.touched`,
+`inbox.add`, `device.connected`, `app.deployed`.
 
 `meal.rejected` is the interesting one — it records what Víctor pushed away
-and what replaced it.
+and what replaced it. `extra.added` is what he ate that was not in the plan.

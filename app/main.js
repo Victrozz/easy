@@ -1,7 +1,12 @@
 // Easy. — boot, routing, and the shell.
+//
+// The shell (floating header, scrolling main, floating tab bar) is built once
+// and kept. Only the main content is rebuilt on a render. That is what lets
+// the tab bar's highlight slide instead of blink, and what keeps your scroll
+// position through a tap.
 
 import { CONFIG } from './config.js';
-import { el, clear, icon, toast } from './ui.js';
+import { el, clear, icon, iconBtn, toast } from './ui.js';
 import {
   store, onChange, load, refresh, flush, startSync, loadCache,
   pendingCount, read,
@@ -15,26 +20,34 @@ applyTheme();
 const app = document.getElementById('app');
 const scrollMemory = {};
 let current = 'today';
+let sub = '';
+let lastRendered = null;
 let rendering = false;
 
 // ------------------------------------------------------------------ routing --
+// #meals            -> module meals, default view
+// #meals/protein    -> module meals, view "protein"
 
-function routeId() {
-  const id = (location.hash || '').replace(/^#\/?/, '').trim();
-  return modules.some((m) => m.id === id) ? id : 'today';
+function route() {
+  const raw = (location.hash || '').replace(/^#\/?/, '').trim();
+  const [id, rest] = raw.split('/');
+  const known = modules.some((m) => m.id === id);
+  return { id: known ? id : 'today', sub: known && rest ? rest : '' };
 }
 
-function nav(id) {
-  if (id === current) return;
-  location.hash = '#' + id;
+function nav(id, view) {
+  const next = '#' + id + (view ? '/' + view : '');
+  if (location.hash === next) return;
+  location.hash = next;
 }
 
 window.addEventListener('hashchange', () => {
-  const next = routeId();
-  if (next !== current) {
-    current = next;
-    ensureFiles().then(render);
+  const r = route();
+  if (r.id !== current || r.sub !== sub) {
+    current = r.id;
+    sub = r.sub;
     render();
+    ensureFiles().then(render);
   }
 });
 
@@ -82,7 +95,54 @@ function restoreFocus(snap) {
 
 // -------------------------------------------------------------------- shell --
 
-function statusDot() {
+const titleEl = el('h1');
+const statusDot = el('span.status-dot');
+const gearBtn = iconBtn('settings', { 'aria-label': 'Settings', onclick: () => nav('settings') }, 21);
+
+const top = el('header.top', [
+  el('div.pill-title.glass', titleEl),
+  el('div.pill-actions.glass', [
+    el('button.status-btn', {
+      type: 'button',
+      'aria-label': 'Sync status',
+      onclick: () => nav('settings'),
+    }, statusDot),
+    iconBtn('refresh', {
+      'aria-label': 'Refresh',
+      onclick: async () => {
+        await flush();
+        await refresh(wantedFiles());
+        toast(store.status === 'error' ? store.error : 'Up to date',
+          store.status === 'error' ? 'bad' : '');
+      },
+    }, 19),
+    gearBtn,
+  ]),
+]);
+
+const main = el('main.main');
+main.addEventListener('scroll', () => { scrollMemory[current] = main.scrollTop; }, { passive: true });
+
+const lens = el('div.nav-lens');
+const navLinks = {};
+const navBadges = {};
+
+const navBar = el('nav.nav.glass', { style: { '--n': navModules.length } }, [
+  lens,
+  el('div.brand', ['Easy', el('span.dot', '.')]),
+  ...navModules.map((m) => {
+    const badge = el('span.badge', { hidden: true });
+    navBadges[m.id] = badge;
+    const a = el('a', { href: '#' + m.id }, [
+      el('span', { style: { position: 'relative', display: 'inline-flex' } }, [icon(m.icon, 22), badge]),
+      el('span', m.label),
+    ]);
+    navLinks[m.id] = a;
+    return a;
+  }),
+]);
+
+function updateStatus() {
   const s = store.status;
   const pending = pendingCount();
   const cls = s === 'error' ? 'error'
@@ -95,50 +155,33 @@ function statusDot() {
       : s === 'readonly' ? 'Read-only — add a token in Settings'
         : pending ? pending + ' change(s) saving'
           : 'Everything saved';
-  return el('span.status-dot', { class: cls, title, 'aria-label': title });
+  statusDot.className = 'status-dot' + (cls ? ' ' + cls : '');
+  statusDot.parentNode.title = title;
+  statusDot.parentNode.setAttribute('aria-label', title);
 }
 
-function buildNav() {
-  return el('nav.nav', [
-    el('div.brand', 'Easy.'),
-    ...navModules.map((m) => {
-      const badge = m.badge ? m.badge() : 0;
-      return el('a', {
-        href: '#' + m.id,
-        class: m.id === current ? 'on' : '',
-        'aria-current': m.id === current ? 'page' : null,
-      }, [
-        el('span', { style: { position: 'relative', display: 'inline-flex' } }, [
-          icon(m.icon, 22),
-          badge ? el('span.badge') : null,
-        ]),
-        el('span', m.label),
-      ]);
-    }),
-  ]);
-}
+function updateShell(mod) {
+  const title = mod.title ? mod.title() : mod.label;
+  clear(titleEl);
+  // The brand's full stop is the only thing in the header with colour.
+  if (title === 'Easy.') titleEl.append('Easy', el('span.dot', '.'));
+  else titleEl.textContent = title;
 
-function buildTop(mod) {
-  return el('header.top', [
-    el('h1', [
-      mod.title ? mod.title() : mod.label,
-    ]),
-    statusDot(),
-    el('button.icon-btn', {
-      'aria-label': 'Refresh',
-      onclick: async () => {
-        await flush();
-        await refresh(wantedFiles());
-        toast(store.status === 'error' ? store.error : 'Up to date',
-          store.status === 'error' ? 'bad' : '');
-      },
-    }, icon('refresh', 19)),
-    el('button.icon-btn', {
-      class: current === 'settings' ? 'on' : '',
-      'aria-label': 'Settings',
-      onclick: () => nav('settings'),
-    }, icon('settings', 20)),
-  ]);
+  gearBtn.classList.toggle('on', current === 'settings');
+  updateStatus();
+
+  navModules.forEach((m, i) => {
+    const a = navLinks[m.id];
+    const on = m.id === current;
+    a.classList.toggle('on', on);
+    if (on) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+    if (on) lens.style.setProperty('--i', i);
+    const n = m.badge ? m.badge() : 0;
+    navBadges[m.id].hidden = !n;
+  });
+  // Settings is reached from the gear, not the bar: park the lens off-stage.
+  if (!navModules.some((m) => m.id === current)) lens.style.setProperty('--i', -2);
 }
 
 // ------------------------------------------------------------------- render --
@@ -149,33 +192,38 @@ function render() {
 
   const mod = moduleById(current);
   const focus = captureFocus();
-  const oldMain = app.querySelector('.main');
-  if (oldMain) scrollMemory[current] = oldMain.scrollTop;
+  const changed = lastRendered !== current + '/' + sub;
 
-  const main = el('main.main');
   const ctx = {
     rerender: render,
     nav,
     read,
     place: settings().place,
+    sub,
   };
 
+  const fresh = el('div');
   try {
-    mod.render(main, ctx);
+    mod.render(fresh, ctx);
   } catch (err) {
     console.error(err);
-    main.appendChild(el('div.banner.warn', [
+    fresh.appendChild(el('div.banner.warn', [
       icon('dot', 16),
       el('span', 'This tab hit an error: ' + err.message),
     ]));
   }
 
-  clear(app);
-  app.appendChild(buildTop(mod));
-  app.appendChild(main);
-  app.appendChild(buildNav());
+  clear(main);
+  while (fresh.firstChild) main.appendChild(fresh.firstChild);
+  updateShell(mod);
 
-  main.scrollTop = scrollMemory[current] || 0;
+  if (changed) {
+    main.classList.add('enter');
+    setTimeout(() => main.classList.remove('enter'), 450);
+    main.scrollTop = scrollMemory[current] || 0;
+    lastRendered = current + '/' + sub;
+  }
+
   restoreFocus(focus);
   rendering = false;
 }
@@ -183,12 +231,16 @@ function render() {
 // --------------------------------------------------------------------- boot --
 
 async function boot() {
-  current = routeId();
+  const r = route();
+  current = r.id;
+  sub = r.sub;
   loadCache();
+
+  app.append(top, main, navBar);
   render();
 
   startSync();
-  onChange(() => { if (!rendering) render(); });
+  onChange(() => { if (!rendering) render(); else updateStatus(); });
 
   // Paint from cache instantly, then always re-check GitHub. A plain load()
   // here would return immediately whenever the cache already had every file,

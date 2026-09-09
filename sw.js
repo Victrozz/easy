@@ -7,7 +7,7 @@
 // from a cache would be worse than no meal plan. The store keeps its own
 // last-known-good copy in localStorage for offline reading.
 
-const VERSION = 'easy-e71bef4235';
+const VERSION = 'easy-b816e0e86d';
 
 const SHELL = [
   './',
@@ -27,6 +27,7 @@ const SHELL = [
   './app/modules/projects.js',
   './app/modules/inbox.js',
   './app/modules/settings.js',
+  './app/modules/protein.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',

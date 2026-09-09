@@ -23,7 +23,7 @@ export const MODES = ['cook', 'leftovers', 'out', 'quick'];
 export const MODE_LABEL = {
   cook: 'Cook it', leftovers: 'Leftovers', out: 'Out / bought', quick: 'Something quick',
 };
-export const MODE_ICON = { cook: 'pot', leftovers: 'fridge', out: 'out', quick: 'quick' };
+export const MODE_ICON = { cook: 'pot', leftovers: 'box', out: 'out', quick: 'quick' };
 
 export const EFFORTS = ['easy', 'medium', 'project'];
 
@@ -39,6 +39,18 @@ const DEFAULT_WEEK = {
   sat: { here: false, slots: [] },
   sun: { here: false, slots: [] },
 };
+
+// What the "Add something" sheet offers when settings.json has no
+// `proteinPresets` of its own. Tell Claude what you actually buy and it
+// writes the real list into settings.
+const DEFAULT_PRESETS = [
+  { name: 'Protein shake', proteinG: 25 },
+  { name: 'Greek yogurt', proteinG: 10 },
+  { name: 'Two eggs', proteinG: 13 },
+  { name: 'Tin of tuna', proteinG: 20 },
+  { name: 'Glass of milk', proteinG: 8 },
+  { name: 'Queso fresco', proteinG: 12 },
+];
 
 // ---------------------------------------------------------------- settings --
 
@@ -59,6 +71,35 @@ export function setDayDefault(dayKey, patch) {
     value: Object.assign({}, cur, patch),
     label: 'settings: default ' + dayKey,
   };
+}
+
+export function setPlace(name) {
+  return {
+    file: SETTINGS_FILE, op: 'set', path: ['place'], value: name,
+    label: 'settings: place',
+  };
+}
+
+export function proteinTarget() {
+  const t = settings().targets;
+  return t && typeof t.protein === 'number' && t.protein > 0 ? t.protein : null;
+}
+
+export function setProteinTarget(grams) {
+  return [
+    {
+      file: SETTINGS_FILE, op: 'set', path: ['targets', 'protein'], value: grams,
+      label: 'settings: protein target',
+    },
+    logEvent('protein.target', { grams }),
+  ];
+}
+
+export function proteinPresets() {
+  const s = read(SETTINGS_FILE) || {};
+  return Array.isArray(s.proteinPresets) && s.proteinPresets.length
+    ? s.proteinPresets
+    : DEFAULT_PRESETS;
 }
 
 // -------------------------------------------------------------------- week --
@@ -86,7 +127,14 @@ export function getWeek(key) {
     if (here) for (const name of tpl.slots) slots[name] = null;
     Object.assign(slots, saved.slots || {});
 
-    days[date] = { date, dayKey: dk, here, slots, note: saved.note || '' };
+    days[date] = {
+      date,
+      dayKey: dk,
+      here,
+      slots,
+      note: saved.note || '',
+      extras: Array.isArray(saved.extras) ? saved.extras : [],
+    };
   }
 
   return { key, days, notes: stored.notes || '', away: allAway(days) };
@@ -124,6 +172,24 @@ export function moveSlot(key, fromDate, fromSlot, toDate, toSlot, value) {
   ];
 }
 
+/** A free-text line for the whole week. Claude reads it when planning. */
+export function setWeekNote(key, text) {
+  const t = (text || '').trim();
+  return [
+    t
+      ? { file: weekFile(key), op: 'set', path: ['notes'], value: t, label: 'week: note' }
+      : { file: weekFile(key), op: 'unset', path: ['notes'], label: 'week: clear note' },
+    logEvent('week.note', { week: key, text: t.slice(0, 160) }),
+  ];
+}
+
+export function setDayNote(key, date, text) {
+  const t = (text || '').trim();
+  return t
+    ? { file: weekFile(key), op: 'set', path: ['days', date, 'note'], value: t, label: 'note: ' + date }
+    : { file: weekFile(key), op: 'unset', path: ['days', date, 'note'], label: 'clear note: ' + date };
+}
+
 // ------------------------------------------------------------------- meals --
 
 export function meals() {
@@ -150,9 +216,11 @@ export function newMeal(fields) {
     effort: 'easy',
     tags: [],
     protein: '',
+    proteinG: null,
     favorite: false,
     batchable: false,
     servings: 1,
+    ingredients: [],
     notes: '',
     timesCooked: 0,
     rejections: 0,
@@ -217,6 +285,82 @@ export function prevWeekKey() {
   const d = new Date();
   d.setDate(d.getDate() - 7);
   return weekKey(d);
+}
+
+// ----------------------------------------------------------------- protein --
+//
+// Protein lives inside Meals, not beside it. A meal carries `proteinG` per
+// serving; a one-off slot ("menú del día") can carry its own `proteinG`;
+// anything eaten outside the plan — a shake, a yogurt — is an `extra` on
+// the day. Nothing here ever says "you missed". A ring that is not full is
+// a day that is not over, or a number Claude has not filled in yet.
+
+export function slotProtein(slot) {
+  if (!slot) return null;
+  if (typeof slot.proteinG === 'number') return slot.proteinG;
+  const m = mealById(slot.meal);
+  return m && typeof m.proteinG === 'number' ? m.proteinG : null;
+}
+
+/**
+ * One day's protein: what the plan adds up to, what is logged as eaten,
+ * and which dishes have no number yet.
+ *
+ *   planned  grams from planned slots that still stand, plus extras
+ *   logged   grams from slots marked "ate", plus extras
+ *   missing  dish names with no proteinG — an ask for Claude, not a gap
+ */
+export function dayProtein(week, date) {
+  const day = week.days[date];
+  const out = { planned: 0, logged: 0, missing: [], slots: [], extras: [] };
+  if (!day) return out;
+
+  for (const s of SLOTS) {
+    const slot = day.slots[s];
+    if (!slot || (!slot.meal && !slot.name)) continue;
+    const g = slotProtein(slot);
+    const name = mealName(slot);
+    const status = slot.status || null;
+    out.slots.push({ slot: s, name, g, status, mode: slot.mode });
+    if (g === null) {
+      if (name && !out.missing.includes(name)) out.missing.push(name);
+      continue;
+    }
+    if (status !== 'skipped' && status !== 'other') out.planned += g;
+    if (status === 'ate') out.logged += g;
+  }
+
+  for (const x of day.extras || []) {
+    const g = typeof x.proteinG === 'number' ? x.proteinG : 0;
+    out.extras.push(x);
+    out.planned += g;
+    out.logged += g;
+  }
+
+  return out;
+}
+
+export function addExtra(key, date, name, proteinG) {
+  const value = { id: uid('x'), name, proteinG, ts: Date.now() };
+  return [
+    {
+      file: weekFile(key), op: 'push', path: ['days', date, 'extras'], value,
+      label: 'protein: ' + name,
+    },
+    logEvent('extra.added', { date, name, proteinG }),
+  ];
+}
+
+export function removeExtra(key, date, id) {
+  return {
+    file: weekFile(key), op: 'removeWhere', path: ['days', date, 'extras'],
+    key: 'id', match: id, label: 'protein: remove extra',
+  };
+}
+
+/** Names of meals in the library with no protein number — Claude's to-do. */
+export function mealsWithoutProtein() {
+  return meals().filter((m) => !m.archived && typeof m.proteinG !== 'number');
 }
 
 // ------------------------------------------------------------------ chores --

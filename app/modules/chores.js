@@ -5,7 +5,7 @@
 
 import {
   el, card, button, icon, sheet, confirmSheet, field, textInput, textArea,
-  numberInput, chips, toast, sectionTitle, empty,
+  numberInput, dateInput, chips, toast, sectionTitle, empty,
 } from '../ui.js';
 import {
   CHORES_FILE, chores, sortedChores, newChore, commit, logEvent,
@@ -31,29 +31,34 @@ function everyLabel(n) {
 
 // ------------------------------------------------------------------ actions --
 
-function markDone(chore) {
+function setLastDone(chore, value, label) {
+  return {
+    file: CHORES_FILE, op: 'patchWhere', path: ['recurring'],
+    key: 'id', match: chore.id, value: { lastDone: value },
+    label: label + chore.name,
+  };
+}
+
+function restore(chore, ctx) {
+  const prev = undo.has(chore.id) ? undo.get(chore.id) : null;
+  undo.delete(chore.id);
+  commit(setLastDone(chore, prev, 'undo: '));
+  ctx.rerender();
+}
+
+function markDone(chore, ctx) {
   const today = ymd();
   if (chore.lastDone === today) {
     // Second tap on something already ticked today = undo.
-    const prev = undo.has(chore.id) ? undo.get(chore.id) : null;
-    undo.delete(chore.id);
-    commit({
-      file: CHORES_FILE, op: 'patchWhere', path: ['recurring'],
-      key: 'id', match: chore.id, value: { lastDone: prev },
-      label: 'undo: ' + chore.name,
-    });
+    restore(chore, ctx);
     return;
   }
   undo.set(chore.id, chore.lastDone || null);
   commit(
-    {
-      file: CHORES_FILE, op: 'patchWhere', path: ['recurring'],
-      key: 'id', match: chore.id, value: { lastDone: today },
-      label: 'done: ' + chore.name,
-    },
+    setLastDone(chore, today, 'done: '),
     logEvent('chore.done', { chore: chore.id, name: chore.name }),
   );
-  toast(chore.name + ' — done');
+  toast(chore.name + ' — done', '', { label: 'Undo', onclick: () => restore(chore, ctx) });
 }
 
 function toggleTask(task) {
@@ -97,6 +102,10 @@ function editChore(chore, ctx) {
     body.appendChild(field('How often', everyWrap));
     body.appendChild(field('or every N days', custom));
 
+    // So "I changed the sheets on Sunday" is a date, not a lie about today.
+    const last = dateInput(draft.lastDone || '', { max: ymd() });
+    body.appendChild(field('Last done', last, 'Leave it empty if never. Sets when it is next due.'));
+
     const notes = textArea(draft.notes, { placeholder: 'Anything worth remembering' });
     body.appendChild(field('Notes', notes));
 
@@ -110,6 +119,7 @@ function editChore(chore, ctx) {
           const value = Object.assign({}, draft, {
             name: n,
             notes: notes.value.trim(),
+            lastDone: last.value || null,
             id: isNew ? slug(n) : draft.id,
           });
           if (isNew) {
@@ -184,9 +194,10 @@ function choreRow(entry, ctx) {
   const doneToday = chore.lastDone === ymd();
 
   const tick = el('button.tick', {
+    type: 'button',
     class: (doneToday ? 'done' : '') + (status.dueIn <= 0 && !doneToday ? ' due' : ''),
     'aria-label': doneToday ? 'Undo ' + chore.name : 'Mark ' + chore.name + ' done',
-    onclick: (e) => { e.stopPropagation(); markDone(chore); ctx.rerender(); },
+    onclick: (e) => { e.stopPropagation(); markDone(chore, ctx); ctx.rerender(); },
   }, icon('check', 17));
 
   let metaText;
@@ -214,6 +225,7 @@ function choreRow(entry, ctx) {
 function taskRow(task, ctx) {
   return el('div.item', { tappable: true, onclick: () => editTask(task, ctx) }, [
     el('button.tick', {
+      type: 'button',
       class: task.done ? 'done' : '',
       'aria-label': task.name,
       onclick: (e) => { e.stopPropagation(); toggleTask(task); ctx.rerender(); },
@@ -280,7 +292,7 @@ export default {
         'Nothing here yet.',
         'Add the things you keep forgetting — bins, sheets, the bathroom.',
       )));
-      root.appendChild(button('Add a chore', {
+      root.appendChild(button([icon('plus', 16), 'Add a chore'], {
         class: 'primary wide', onclick: () => editChore(null, ctx),
       }));
       return;
@@ -297,7 +309,7 @@ export default {
     }
 
     root.appendChild(el('div', { style: { marginTop: '12px' } },
-      button('Add a chore', { class: 'wide', onclick: () => editChore(null, ctx) })));
+      button([icon('plus', 16), 'Add a chore'], { class: 'wide', onclick: () => editChore(null, ctx) })));
 
     root.appendChild(sectionTitle('Tasks', button('Add', {
       class: 'small ghost', onclick: () => addTask(ctx),
