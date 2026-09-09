@@ -9,3 +9,4 @@
 {"ts":1788940575090,"date":"2026-09-09","type":"chore.done","chore":"nevera","name":"Clear out the fridge"}
 {"ts":1788940575740,"date":"2026-09-09","type":"chore.done","chore":"compra","name":"Big shop"}
 {"ts":1788947839730,"date":"2026-09-09","type":"meal.planned","slot":"lunch","meal":"garbanzos-espinacas","mode":"cook"}
+{"ts":1788947849385,"date":"2026-09-09","type":"meal.rejected","slot":"lunch","meal":"garbanzos-espinacas","replacedWith":"pasta-con-atun"}
