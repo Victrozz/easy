@@ -105,13 +105,19 @@ const ICONS = {
     d: 'M3.5 12h14v3a4 4 0 0 1-4 4h-6a4 4 0 0 1-4-4z M17.5 13.5H22 M8.6 9c.9-1-.9-1.6 0-2.6s-.9-1.6 0-2.6 M12.6 9c.9-1-.9-1.6 0-2.6s-.9-1.6 0-2.6',
     fill: 'M3.5 12h14v3a4 4 0 0 1-4 4h-6a4 4 0 0 1-4-4z',
   },
+  // A broom stood upright, not swept diagonally: the handle is a plain
+  // vertical, and the head is one wide closed mass. The old one was a hairline
+  // diagonal with a curved sliver of bristles, which at 22px was a smudge —
+  // and near-identical to the old projects pen.
   chores: {
-    d: 'M20 4l-8.2 8.2 M10.4 11.4l2.4 2.4 M10.4 11.4C7.2 12.5 4.7 15.5 3.6 20.6c5-1.1 8-3.5 9.2-6.8 M6.6 17.6l2.3-2.3',
-    fill: 'M10.4 11.4C7.2 12.5 4.7 15.5 3.6 20.6c5-1.1 8-3.5 9.2-6.8z',
+    d: 'M12 3.2V12 M6.6 12h10.8l1.3 7.4a1.4 1.4 0 0 1-1.4 1.6H6.7a1.4 1.4 0 0 1-1.4-1.6z M9.6 12.4v8.4 M14.4 12.4v8.4',
+    fill: 'M6.6 12h10.8l1.3 7.4a1.4 1.4 0 0 1-1.4 1.6H6.7a1.4 1.4 0 0 1-1.4-1.6z',
   },
+  // A flag on a pole. Tall thin vertical with the mass up top — nothing else
+  // in the bar has that shape.
   projects: {
-    d: 'M15.6 3.6l2.8 2.8-6 6-2.8-2.8z M11 11 4 18',
-    fill: 'M15.6 3.6l2.8 2.8-6 6-2.8-2.8z',
+    d: 'M5.8 3.4V21 M5.8 4.6h12.4l-2.7 3.5 2.7 3.5H5.8z',
+    fill: 'M5.8 4.6h12.4l-2.7 3.5 2.7 3.5H5.8z',
   },
   inbox: {
     d: 'M16.5 15H9.5a5.5 5.5 0 1 1 5.27-7h1.73a3.5 3.5 0 1 1 0 7z M4.7 18.3a1.4 1.4 0 1 0 2.8 0 1.4 1.4 0 1 0-2.8 0 M2.6 21.4a.9.9 0 1 0 1.8 0 .9.9 0 1 0-1.8 0',

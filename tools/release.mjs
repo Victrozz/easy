@@ -26,14 +26,17 @@ const hash = h.digest('hex').slice(0, 10);
 
 const swPath = 'sw.js';
 const sw = fs.readFileSync(swPath, 'utf8');
-const next = sw.replace(/const VERSION = '[^']*';/, "const VERSION = 'easy-" + hash + "';");
 
-if (next === sw) {
+// Look for the line before rewriting it. Comparing before/after instead would
+// call a second run — where the stamp is already correct, so the rewrite is a
+// no-op — a missing VERSION line, which is alarming and untrue.
+const before = (sw.match(/const VERSION = '([^']*)'/) || [])[1];
+if (!before) {
   console.error('Could not find the VERSION line in sw.js — check it by hand.');
   process.exit(1);
 }
 
-const before = (sw.match(/const VERSION = '([^']*)'/) || [])[1];
+const next = sw.replace(/const VERSION = '[^']*';/, "const VERSION = 'easy-" + hash + "';");
 fs.writeFileSync(swPath, next);
 console.log(before === 'easy-' + hash
   ? 'unchanged (' + hash + ')'
