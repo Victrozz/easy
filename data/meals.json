@@ -1,4 +1,37 @@
 {
   "version": 1,
-  "items": []
+  "items": [
+    {
+      "id": "macarrones-carne",
+      "name": "Macarrones con carne picada",
+      "effort": "easy",
+      "tags": ["batch"],
+      "protein": "carne picada",
+      "proteinG": 45,
+      "favorite": false,
+      "batchable": true,
+      "servings": 3,
+      "ingredients": ["macarrones", "carne picada", "tomate frito", "queso rallado"],
+      "notes": "Queso rallado por encima. proteinG is an estimate until the labels.",
+      "timesCooked": 0,
+      "rejections": 0,
+      "lastCooked": null
+    },
+    {
+      "id": "pollo-arroz",
+      "name": "Pollo con arroz",
+      "effort": "easy",
+      "tags": ["rápido"],
+      "protein": "pollo",
+      "proteinG": 40,
+      "favorite": false,
+      "batchable": false,
+      "servings": 2,
+      "ingredients": ["pollo precocinado", "arroz"],
+      "notes": "Pack Mercadona de 4 piezas, 2 por ración. proteinG is an estimate until the label.",
+      "timesCooked": 0,
+      "rejections": 0,
+      "lastCooked": null
+    }
+  ]
 }
