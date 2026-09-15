@@ -65,6 +65,31 @@
       "timesCooked": 0,
       "rejections": 0,
       "lastCooked": null
+    },
+    {
+      "id": "yogur-griego-desayuno",
+      "name": "Yogur griego con miel, arándanos y plátano",
+      "effort": "easy",
+      "tags": [
+        "rápido",
+        "desayuno"
+      ],
+      "protein": "yogur griego",
+      "proteinG": 11,
+      "favorite": false,
+      "batchable": false,
+      "servings": 1,
+      "ingredients": [
+        "yogur griego",
+        "miel",
+        "arándanos",
+        "plátanos",
+        "proteína en polvo"
+      ],
+      "notes": "200g yogur, 80g arándanos, 1 plátano. proteinG es sin cazo: los cazos se suman con \"Cazo de proteína\" en Add something (+10g cada uno). Estimate until the label.",
+      "timesCooked": 0,
+      "rejections": 0,
+      "lastCooked": null
     }
   ]
 }

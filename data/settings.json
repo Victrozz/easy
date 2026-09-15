@@ -9,6 +9,7 @@
     "tue": {
       "here": true,
       "slots": [
+        "breakfast",
         "lunch",
         "dinner"
       ]
@@ -16,6 +17,7 @@
     "wed": {
       "here": true,
       "slots": [
+        "breakfast",
         "lunch",
         "dinner"
       ]
@@ -23,6 +25,7 @@
     "thu": {
       "here": true,
       "slots": [
+        "breakfast",
         "lunch",
         "dinner"
       ]
@@ -30,6 +33,7 @@
     "fri": {
       "here": true,
       "slots": [
+        "breakfast",
         "lunch"
       ]
     },
@@ -46,5 +50,14 @@
     "protein": 100,
     "fiber": null
   },
+  "proteinPresets": [
+    { "name": "Cazo de proteína", "proteinG": 10 },
+    { "name": "Protein shake", "proteinG": 25 },
+    { "name": "Greek yogurt", "proteinG": 10 },
+    { "name": "Two eggs", "proteinG": 13 },
+    { "name": "Tin of tuna", "proteinG": 20 },
+    { "name": "Glass of milk", "proteinG": 8 },
+    { "name": "Queso fresco", "proteinG": 12 }
+  ],
   "lastSession": null
 }

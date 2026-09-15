@@ -18,6 +18,12 @@
     },
     "2026-09-16": {
       "slots": {
+        "breakfast": {
+          "meal": "yogur-griego-desayuno",
+          "name": null,
+          "mode": "cook",
+          "status": null
+        },
         "lunch": {
           "meal": "macarrones-carne",
           "name": null,
@@ -34,6 +40,12 @@
     },
     "2026-09-17": {
       "slots": {
+        "breakfast": {
+          "meal": "yogur-griego-desayuno",
+          "name": null,
+          "mode": "cook",
+          "status": null
+        },
         "lunch": {
           "meal": "macarrones-carne",
           "name": null,
@@ -50,6 +62,12 @@
     },
     "2026-09-18": {
       "slots": {
+        "breakfast": {
+          "meal": "yogur-griego-desayuno",
+          "name": null,
+          "mode": "cook",
+          "status": null
+        },
         "lunch": {
           "meal": "salmon-verduras",
           "name": null,
