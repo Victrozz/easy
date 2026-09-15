@@ -8,13 +8,19 @@
     },
     "2026-09-16": {
       "slots": {
-        "lunch": { "meal": "macarrones-carne", "name": null, "mode": "leftovers", "status": null }
+        "lunch": { "meal": "macarrones-carne", "name": null, "mode": "leftovers", "status": null },
+        "dinner": { "meal": "salmon-verduras", "name": null, "mode": "cook", "status": null }
       }
     },
     "2026-09-17": {
       "slots": {
         "lunch": { "meal": "macarrones-carne", "name": null, "mode": "leftovers", "status": null },
         "dinner": { "meal": "pollo-arroz", "name": null, "mode": "leftovers", "status": null }
+      }
+    },
+    "2026-09-18": {
+      "slots": {
+        "lunch": { "meal": "salmon-verduras", "name": null, "mode": "cook", "status": null }
       }
     }
   }
