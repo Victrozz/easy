@@ -21,8 +21,10 @@
       "id": "wash-sheets-and-towels",
       "name": "wash sheets and towels",
       "everyDays": 14,
-      "lastDone": null,
-      "history": [],
+      "lastDone": "2026-09-15",
+      "history": [
+        "2026-09-15"
+      ],
       "notes": "take them back to benicassim and bring them back clean"
     }
   ],
