@@ -5,13 +5,20 @@
       "id": "macarrones-carne",
       "name": "Macarrones con carne picada",
       "effort": "easy",
-      "tags": ["batch"],
+      "tags": [
+        "batch"
+      ],
       "protein": "carne picada",
       "proteinG": 45,
-      "favorite": false,
+      "favorite": true,
       "batchable": true,
       "servings": 3,
-      "ingredients": ["macarrones", "carne picada", "tomate frito", "queso rallado"],
+      "ingredients": [
+        "macarrones",
+        "carne picada",
+        "tomate frito",
+        "queso rallado"
+      ],
       "notes": "Queso rallado por encima. proteinG is an estimate until the labels.",
       "timesCooked": 0,
       "rejections": 0,
@@ -21,13 +28,18 @@
       "id": "pollo-arroz",
       "name": "Pollo con arroz",
       "effort": "easy",
-      "tags": ["rápido"],
+      "tags": [
+        "rápido"
+      ],
       "protein": "pollo",
       "proteinG": 40,
       "favorite": false,
       "batchable": false,
       "servings": 2,
-      "ingredients": ["pollo precocinado", "arroz"],
+      "ingredients": [
+        "pollo precocinado",
+        "arroz"
+      ],
       "notes": "Pack Mercadona de 4 piezas, 2 por ración. proteinG is an estimate until the label.",
       "timesCooked": 0,
       "rejections": 0,
@@ -37,13 +49,18 @@
       "id": "salmon-verduras",
       "name": "Salmón con verduras",
       "effort": "easy",
-      "tags": ["rápido"],
+      "tags": [
+        "rápido"
+      ],
       "protein": "salmón",
       "proteinG": 28,
       "favorite": false,
       "batchable": false,
       "servings": 2,
-      "ingredients": ["salmón", "verduras al vapor"],
+      "ingredients": [
+        "salmón",
+        "verduras al vapor"
+      ],
       "notes": "Pack de 2 lomos: uno el miércoles, otro el viernes, nada sobra para el finde. proteinG is an estimate until the label.",
       "timesCooked": 0,
       "rejections": 0,
