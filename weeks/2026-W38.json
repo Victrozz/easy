@@ -83,6 +83,12 @@
           "name": "Greek yogurt",
           "proteinG": 10,
           "ts": 1789816045524
+        },
+        {
+          "id": "x_mu8a9jjso0vc",
+          "name": "Protein shake",
+          "proteinG": 30,
+          "ts": 1789816051000
         }
       ]
     }
