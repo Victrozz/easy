@@ -75,6 +75,16 @@
           "status": null
         }
       }
+    },
+    "2026-09-19": {
+      "extras": [
+        {
+          "id": "x_mu8a9fbo4wan",
+          "name": "Greek yogurt",
+          "proteinG": 10,
+          "ts": 1789816045524
+        }
+      ]
     }
   },
   "shopping": {
