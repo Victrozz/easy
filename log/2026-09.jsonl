@@ -15,3 +15,4 @@
 {"ts":1789816410145,"date":"2026-09-19","type":"chore.done","chore":"take-trash-out","name":"take trash out"}
 {"ts":1790233069023,"date":"2026-09-24","type":"meal.planned","slot":"breakfast","meal":"yogur-griego-desayuno","mode":"cook"}
 {"ts":1790233081990,"date":"2026-09-24","type":"chore.done","chore":"take-trash-out","name":"take trash out"}
+{"ts":1790233096326,"date":"2026-09-24","type":"extra.added","name":"Cazo de proteína","proteinG":20}
