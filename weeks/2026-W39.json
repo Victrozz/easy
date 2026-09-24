@@ -1,0 +1,14 @@
+{
+  "days": {
+    "2026-09-24": {
+      "slots": {
+        "breakfast": {
+          "meal": "yogur-griego-desayuno",
+          "name": null,
+          "mode": "cook",
+          "status": null
+        }
+      }
+    }
+  }
+}
