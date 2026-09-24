@@ -8,7 +8,15 @@
           "mode": "cook",
           "status": null
         }
-      }
+      },
+      "extras": [
+        {
+          "id": "x_muf6k9s6l23h",
+          "name": "Cazo de proteína",
+          "proteinG": 20,
+          "ts": 1790233096326
+        }
+      ]
     }
   }
 }
