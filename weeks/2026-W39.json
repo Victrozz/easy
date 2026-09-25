@@ -45,6 +45,12 @@
           "status": null
         }
       }
+    },
+    "2026-09-21": {
+      "presence": "away"
+    },
+    "2026-09-22": {
+      "presence": "here"
     }
   }
 }
