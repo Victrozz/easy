@@ -37,6 +37,12 @@
           "name": null,
           "mode": "cook",
           "status": null
+        },
+        "breakfast": {
+          "meal": "yogur-griego-desayuno",
+          "name": null,
+          "mode": "cook",
+          "status": null
         }
       }
     }
