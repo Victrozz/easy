@@ -17,6 +17,16 @@
           "ts": 1790233096326
         }
       ]
+    },
+    "2026-09-25": {
+      "slots": {
+        "lunch": {
+          "meal": "macarrones-carne",
+          "name": null,
+          "mode": "cook",
+          "status": null
+        }
+      }
     }
   }
 }
