@@ -7,6 +7,18 @@
           "name": null,
           "mode": "cook",
           "status": null
+        },
+        "lunch": {
+          "meal": "macarrones-carne",
+          "name": null,
+          "mode": "cook",
+          "status": null
+        },
+        "dinner": {
+          "meal": "macarrones-carne",
+          "name": null,
+          "mode": "cook",
+          "status": null
         }
       },
       "extras": [
