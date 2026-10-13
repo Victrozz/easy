@@ -16,7 +16,7 @@
     {
       "id": "clean-bathroom",
       "name": "clean bathroom",
-      "everyDays": 7,
+      "everyDays": 14,
       "lastDone": null,
       "history": [],
       "notes": ""
